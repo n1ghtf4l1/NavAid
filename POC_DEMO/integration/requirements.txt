@@ -1,0 +1,14 @@
+# NavAid Python Backend Requirements
+
+# Web server
+flask==3.0.0
+flask-cors==4.0.0
+
+# Gemini API
+google-generativeai
+
+# Data validation
+pydantic
+
+# Audio processing
+soundfile

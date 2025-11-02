@@ -1,0 +1,91 @@
+{
+  "trip_metadata": {
+    "origin": "Campus Center",
+    "destination": "Library Building",
+    "total_distance_meters": 200,
+    "estimated_duration_minutes": 3,
+    "num_steps": 5
+  },
+  "instructions": [
+    {
+      "step_number": 1,
+      "instruction": "Head straight on the main walkway",
+      "distance_meters": 50,
+      "duration_seconds": 40,
+      "maneuver": "straight",
+      "tts_text": "Head straight on the main walkway for 50 meters"
+    },
+    {
+      "step_number": 2,
+      "instruction": "Continue straight past the fountain",
+      "distance_meters": 40,
+      "duration_seconds": 30,
+      "maneuver": "straight",
+      "tts_text": "Continue straight past the fountain on your left"
+    },
+    {
+      "step_number": 3,
+      "instruction": "Continue forward",
+      "distance_meters": 45,
+      "duration_seconds": 35,
+      "maneuver": "straight",
+      "tts_text": "Continue forward for 45 meters"
+    },
+    {
+      "step_number": 4,
+      "instruction": "Approach the crosswalk",
+      "distance_meters": 30,
+      "duration_seconds": 25,
+      "maneuver": "straight",
+      "tts_text": "Approaching crosswalk ahead. Prepare to use Deep Analyze for the traffic light"
+    },
+    {
+      "step_number": 5,
+      "instruction": "You have arrived at your destination",
+      "distance_meters": 0,
+      "duration_seconds": 0,
+      "maneuver": "destination",
+      "tts_text": "You have arrived at the Library Building"
+    }
+  ],
+  "photo_timing": {
+    "description": "Photos analyzed every 5 seconds during the trip",
+    "photo_interval_seconds": 5,
+    "total_photos_needed": 5,
+    "photo_naming_convention": "trip_photo_01.png through trip_photo_05.png",
+    "photo_location_guide": "5 sequential photos showing the walking route from Campus Center to Library"
+  },
+  "hazard_scenarios": {
+    "description": "Demo scenario with 5 photos, 1 traffic light, 1 scene",
+    "scenarios": [
+      {
+        "photo_number": 1,
+        "hazard": "Clear path - trip_photo_01.png",
+        "step_reference": 1
+      },
+      {
+        "photo_number": 2,
+        "hazard": "Clear path - trip_photo_02.png",
+        "step_reference": 2
+      },
+      {
+        "photo_number": 3,
+        "hazard": "Clear path - trip_photo_03.png",
+        "step_reference": 3
+      },
+      {
+        "photo_number": 4,
+        "hazard": "Traffic light detected - trip_photo_04.png (triggers Deep Analyze)",
+        "step_reference": 4
+      },
+      {
+        "photo_number": 5,
+        "hazard": "Destination - trip_photo_05.png",
+        "step_reference": 5
+      }
+    ],
+    "traffic_light_photo": "traffic_lights/traffic_01.png - Used when user presses Deep Analyze button",
+    "scene_photo": "scene_understanding/scene_01.png - Used when user presses Scene Understanding button"
+  },
+  "notes": "Simplified 5-step demo matching the 5 available trip photos. Traffic light and scene understanding photos are loaded on demand when user presses respective buttons."
+}
