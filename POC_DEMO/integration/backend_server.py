@@ -15,12 +15,14 @@ import os
 import sys
 from pathlib import Path
 import io
+import json
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "MILESTONE1" / "GUIDANCE_METRICS"))
 
 from gemini_api.gemini_client import GeminiHazardClient
 from gemini_api.hazard_schema import HazardOutput
+from gemini_api.navigation_guidance_schema import NavigationGuidanceOutput
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for iOS app
@@ -61,8 +63,46 @@ def load_prompt(filename):
 hazard_prompt = load_prompt("hazard_detection_v3.md")
 scene_prompt = load_prompt("scene_understanding.md")
 traffic_prompt = load_prompt("deep_analyze_traffic.md")
+navigation_guidance_prompt = load_prompt("navigation_guidance_v3.md")
 
 print("✅ All prompts loaded")
+
+# User profile path (iOS app saves to Documents directory)
+# For demo, we'll check if profile exists and load it
+USER_PROFILE_PATH = "/Users/prabhavsingh/Library/Containers/com.navaid.app/Data/Documents/user_profile.json"
+
+def load_user_profile():
+    """Load user profile if exists, otherwise return placeholder."""
+    if os.path.exists(USER_PROFILE_PATH):
+        try:
+            with open(USER_PROFILE_PATH, 'r') as f:
+                profile = json.load(f)
+
+            # Format profile as markdown for prompt injection
+            profile_text = f"""
+- Name: {profile.get('name', 'N/A')}
+- Age: {profile.get('age', 'N/A')}
+- Vision Problems: {profile.get('visionProblems', 'N/A')}
+- Assistive Devices: {profile.get('assistiveDevices', 'N/A')}
+- Other Vision Defects: {profile.get('otherVisionDefects', 'N/A')}
+- Primary Environments: {profile.get('primaryNavigationEnvironments', 'N/A')}
+- Navigation Challenges: {profile.get('navigationChallenges', 'N/A')}
+"""
+            print("✅ User profile loaded")
+            return profile_text
+        except Exception as e:
+            print(f"⚠️  Failed to load user profile: {e}")
+            return "No user profile available."
+    else:
+        print("ℹ️  No user profile found (first-time user or not yet configured)")
+        return "No user profile available."
+
+# Load user profile once at startup
+user_profile_text = load_user_profile()
+
+def inject_user_profile(prompt):
+    """Replace {USER_PROFILE_PLACEHOLDER} with actual profile data."""
+    return prompt.replace("{USER_PROFILE_PLACEHOLDER}", user_profile_text)
 
 
 # MARK: - API Endpoints
@@ -84,8 +124,11 @@ def hazard_detection():
 
         print(f"🔍 Analyzing hazards: {os.path.basename(image_path)}")
 
-        # Call Gemini API
-        raw_dict, raw_text = gemini_client.analyze(Path(image_path), hazard_prompt)
+        # Call Gemini API with user profile injected
+        final_prompt = inject_user_profile(hazard_prompt)
+        raw_dict, raw_text = gemini_client.analyze(Path(image_path), final_prompt)
+
+        print(raw_dict)
 
         # Validate and normalize
         hazard_output = HazardOutput(**raw_dict).normalized()
@@ -126,8 +169,9 @@ def scene_understanding():
             rpm_limit=0
         )
 
-        # Call Gemini API
-        raw_dict, raw_text = scene_client.analyze(Path(image_path), scene_prompt)
+        # Call Gemini API with user profile injected
+        final_prompt = inject_user_profile(scene_prompt)
+        raw_dict, raw_text = scene_client.analyze(Path(image_path), final_prompt)
 
         # Return as JSON (no validation model needed, raw JSON is fine)
         return jsonify(raw_dict)
@@ -165,14 +209,71 @@ def deep_analyze_traffic():
             rpm_limit=0
         )
 
-        # Call Gemini API
-        raw_dict, raw_text = traffic_client.analyze(Path(image_path), traffic_prompt)
+        # Call Gemini API with user profile injected
+        final_prompt = inject_user_profile(traffic_prompt)
+        raw_dict, raw_text = traffic_client.analyze(Path(image_path), final_prompt)
 
         # Return as JSON
         return jsonify(raw_dict)
 
     except Exception as e:
         print(f"❌ Traffic light analysis error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/navigation-guidance', methods=['POST'])
+def navigation_guidance():
+    """
+    Endpoint for combined navigation + hazard guidance (v3.0).
+
+    Request: {
+        "navigation_instruction": "Head straight for 50 meters",
+        "image_path": "/path/to/image.jpg"
+    }
+    Response: NavigationGuidanceResponse JSON
+    """
+    try:
+        data = request.json
+        navigation_instruction = data.get('navigation_instruction')
+        image_path = data.get('image_path')
+
+        if not navigation_instruction:
+            return jsonify({"error": "No navigation instruction provided"}), 400
+
+        if not image_path or not os.path.exists(image_path):
+            return jsonify({"error": "Invalid image path"}), 400
+
+        print(f"🗺️  Navigation guidance: {navigation_instruction[:50]}... + {os.path.basename(image_path)}")
+
+        # Build combined prompt with navigation instruction
+        base_prompt_with_profile = inject_user_profile(navigation_guidance_prompt)
+        combined_prompt = f"""
+{base_prompt_with_profile}
+
+---
+
+## Current Navigation Instruction from Google Maps:
+{navigation_instruction}
+
+## Your Task:
+Analyze the photo and provide combined guidance following the schema above.
+"""
+
+        # Call Gemini API with combined prompt
+        raw_dict, raw_text = gemini_client.analyze(Path(image_path), combined_prompt)
+
+        print(f"📤 Response: {raw_dict}")
+
+        # Validate and normalize
+        guidance_output = NavigationGuidanceOutput(**raw_dict).normalized()
+
+        # Return as JSON
+        return jsonify(guidance_output.model_dump())
+
+    except Exception as e:
+        print(f"❌ Navigation guidance error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
@@ -218,6 +319,58 @@ def text_to_speech():
 
     except Exception as e:
         print(f"❌ TTS error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/transcribe', methods=['POST'])
+def transcribe_audio():
+    """
+    Endpoint for audio transcription using Whisper.
+
+    Request: Multipart form with 'audio' file (WAV, M4A, MP3)
+    Response: {"text": "transcribed text"}
+    """
+    try:
+        # Check if audio file is in request
+        if 'audio' not in request.files:
+            return jsonify({"error": "No audio file provided"}), 400
+
+        audio_file = request.files['audio']
+
+        if audio_file.filename == '':
+            return jsonify({"error": "Empty filename"}), 400
+
+        print(f"🎤 Transcribing audio: {audio_file.filename}")
+
+        # Save temporarily
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(audio_file.filename)[1]) as tmp:
+            audio_file.save(tmp.name)
+            tmp_path = tmp.name
+
+        try:
+            # Use OpenAI Whisper for transcription
+            import whisper
+
+            # Load Whisper model (base is good balance of speed/accuracy)
+            whisper_model = whisper.load_model("base")
+
+            # Transcribe
+            result = whisper_model.transcribe(tmp_path)
+
+            print(f"📝 Transcription: {result['text']}")
+
+            return jsonify({"text": result['text'].strip()})
+
+        finally:
+            # Clean up temp file
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    except Exception as e:
+        print(f"❌ Transcription error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

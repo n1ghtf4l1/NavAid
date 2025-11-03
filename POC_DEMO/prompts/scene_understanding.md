@@ -338,6 +338,20 @@ Choose the BEST match:
 
 ---
 
+## User Profile (Optional Context)
+
+The following information about the user may be available to help you tailor your scene description. Use this information when relevant, but do not force it into every response.
+
+{USER_PROFILE_PLACEHOLDER}
+
+**How to use this information:**
+- If user mentions specific environments they navigate (e.g., urban vs. suburban), contextualize the scene accordingly
+- If user mentions specific challenges (e.g., difficulty with stairs), highlight those features if present
+- If user has light sensitivity or color blindness, focus on spatial/structural features rather than visual appearance
+- Keep the one-sentence summary concise - only mention profile-relevant details when they genuinely help orientation
+
+---
+
 ## Final Instruction
 
 **Return exactly ONE valid JSON object. No markdown fences. No extra prose. Focus on orientation, landmarks, and safety.**

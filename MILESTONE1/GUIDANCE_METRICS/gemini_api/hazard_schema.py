@@ -1,10 +1,10 @@
-# hazard_schema.py  — Pydantic v2 compatible
+# hazard_schema.py  — Pydantic v2 compatible (v3.0 with haptics + traffic lights)
 from __future__ import annotations
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, confloat, conlist
 
-PROMPT_VERSION = "2.0"  # keep in sync with prompt.md
+PROMPT_VERSION = "3.0"  # v3.0 adds haptics and traffic light detection
 
 ALLOWED_TYPES = {
     "trafficcone","person","vehicle","bicycle","motorcycle","stroller","barrier",
@@ -20,6 +20,11 @@ CANON = {
     "bike": "bicycle", "sign": "signpost", "bollards": "bollard"
 }
 
+class TrafficLightInfo(BaseModel):
+    approximate_distance_meters: int = Field(ge=0)
+    description: str = Field(max_length=200)
+    requires_deep_analyze: bool = True
+
 class HazardOutput(BaseModel):
     hazard_detected: bool
     num_hazards: int = Field(ge=0)
@@ -31,6 +36,11 @@ class HazardOutput(BaseModel):
     proximity: str
     confidence: confloat(ge=0.0, le=1.0)
     notes: str = Field(max_length=300)  # v2.0: explicit limit for notes (~40 words)
+
+    # v3.0: NEW FIELDS
+    haptic_recommendation: str = "no_haptic"  # left_haptic | right_haptic | full_haptic | no_haptic
+    traffic_light_detected: bool = False
+    traffic_light_info: Optional[TrafficLightInfo] = None
 
     def normalized(self) -> "HazardOutput":
         d = self.model_dump()
@@ -59,6 +69,28 @@ class HazardOutput(BaseModel):
         # clamp confidence defensively
         c = float(d["confidence"])
         d["confidence"] = max(0.0, min(1.0, c))
+
+        # v3.0: Normalize haptic recommendation
+        haptic = d.get("haptic_recommendation", "no_haptic").lower().strip()
+        if haptic not in ["left_haptic", "right_haptic", "full_haptic", "no_haptic"]:
+            # Auto-generate based on bearing + proximity if invalid
+            if d["proximity"] == "near" and d["hazard_detected"]:
+                if d["bearing"] == "left":
+                    haptic = "left_haptic"
+                elif d["bearing"] == "right":
+                    haptic = "right_haptic"
+                elif d["bearing"] == "center":
+                    haptic = "full_haptic"
+                else:
+                    haptic = "no_haptic"
+            else:
+                haptic = "no_haptic"
+        d["haptic_recommendation"] = haptic
+
+        # v3.0: Normalize traffic light detection
+        if not d.get("traffic_light_detected"):
+            d["traffic_light_detected"] = False
+            d["traffic_light_info"] = None
 
         return HazardOutput(**d)
 
