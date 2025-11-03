@@ -51,48 +51,159 @@ function renderResult(mode, data){
   out.innerHTML = '';
 
   if (data.error){
-    out.appendChild(renderKV('Error', [['Message', data.error]]));
+    const b = el('div', {class:'banner warn'}, [
+      el('div', {class:'icon'}, '⚠️'),
+      el('div', {}, [el('strong', {}, 'Error'), document.createTextNode(` — ${data.error}`)])
+    ]);
+    out.appendChild(b);
     return;
   }
 
   if (mode === 'trip'){
-    // NavigationGuidanceOutput schema
-    out.appendChild(renderKV('Navigation + Hazards', [
-      ['Instruction', asText(data.navigation_instruction)],
-      ['Hazard Detected', data.hazard_detected ? 'Yes' : 'No'],
-      ['Hazard Guidance', asText(data.hazard_guidance)],
-      ['Haptic', asText(data.haptic_recommendation)],
-      ['Traffic Light', data.traffic_light_detected ? 'Detected' : 'Not detected'],
-      ['Traffic Light Info', data.traffic_light_info ? `${data.traffic_light_info.description} (~${data.traffic_light_info.approximate_distance_meters}m)` : '—'],
-      ['Confidence', asText(data.confidence)],
-      ['Notes', asText(data.notes)],
-    ]));
+    // Navigation mode - comprehensive display
+    const instr = el('div', {class:'panel'}, [
+      el('div', {class:'panel-title'}, '🗺️ Navigation Instruction'),
+      el('div', {class:'big'}, asText(data.navigation_instruction || 'No instruction provided')),
+      el('div', {class:'chips'}, [
+        el('div', {class:'chip info'}, `📊 Confidence: ${Math.round((data.confidence || 0)*100)}%`),
+        data.notes ? el('div', {class:'chip'}, `📝 Has notes`) : null,
+      ].filter(Boolean))
+    ]);
+    out.appendChild(instr);
+
+    // Hazard section
+    if (data.hazard_detected){
+      const hazardDetails = el('div', {class:'detail-list'});
+      if (data.hazard_guidance) {
+        hazardDetails.appendChild(el('div', {class:'detail-item'}, [
+          el('strong', {}, 'Guidance: '),
+          document.createTextNode(asText(data.hazard_guidance))
+        ]));
+      }
+      if (data.haptic_recommendation) {
+        hazardDetails.appendChild(el('div', {class:'detail-item'}, [
+          el('strong', {}, 'Haptic: '),
+          document.createTextNode(asText(data.haptic_recommendation))
+        ]));
+      }
+
+      const banner = el('div', {class:'banner warn'}, [
+        el('div', {class:'icon'}, '🚧'),
+        el('div', {style:'flex:1;'}, [
+          el('div', {style:'font-weight:700; margin-bottom:8px; font-size:16px;'}, 'Hazard Detected'),
+          hazardDetails
+        ])
+      ]);
+      out.appendChild(banner);
+    } else {
+      const banner = el('div', {class:'banner ok'}, [
+        el('div', {class:'icon'}, '✅'),
+        el('div', {}, 'No immediate hazards detected.')
+      ]);
+      out.appendChild(banner);
+    }
+
+    // Traffic light section
+    const tlDetails = [];
+    if (data.traffic_light_detected && data.traffic_light_info){
+      tlDetails.push(el('div', {class:'detail-item'}, [
+        el('strong', {}, 'State: '),
+        document.createTextNode(data.traffic_light_info.description || 'Unknown')
+      ]));
+      tlDetails.push(el('div', {class:'detail-item'}, [
+        el('strong', {}, 'Distance: '),
+        document.createTextNode(`~${data.traffic_light_info.approximate_distance_meters || '?'}m`)
+      ]));
+    }
+
+    const tl = el('div', {class:'panel'}, [
+      el('div', {class:'panel-title'}, '🚦 Traffic Signal'),
+      el('div', {class:'big'}, data.traffic_light_detected ? '✅ Signal detected' : '❌ No signal detected'),
+      ...(tlDetails.length ? [el('div', {class:'detail-list', style:'margin-top:12px;'}, tlDetails)] : [])
+    ]);
+    out.appendChild(tl);
+
+    // Show all other fields
+    renderAllFields(data, out, ['navigation_instruction', 'confidence', 'hazard_detected', 'hazard_guidance', 'haptic_recommendation', 'traffic_light_detected', 'traffic_light_info']);
     return;
   }
 
-  // Scene understanding / Deep analyze traffic (raw JSON)
-  // Try to surface likely fields nicely
-  const knownTitle = mode === 'scene' ? 'Scene Understanding' : 'Traffic Light Analysis';
-  const pairs = [];
-  const keys = Object.keys(data || {});
-  if (keys.length === 0){
-    out.appendChild(renderKV(knownTitle, [['Result', 'No data']]));
+  if (mode === 'deep'){
+    // Deep analyze mode
+    const panel = el('div', {class:'panel'}, [
+      el('div', {class:'panel-title'}, '🚦 Traffic Light Analysis'),
+    ]);
+
+    const mainText = data.recommendation || data.description || '';
+    if (mainText) panel.appendChild(el('div', {class:'big'}, asText(mainText)));
+
+    const chips = [];
+    if ('safe_to_cross' in data) chips.push(el('div', {class: data.safe_to_cross ? 'chip ok':'chip warn'}, data.safe_to_cross ? '✅ Safe to cross' : '❌ Do not cross'));
+    if ('countdown_seconds' in data && data.countdown_seconds!=null) chips.push(el('div', {class:'chip info'}, `⏱️ ${data.countdown_seconds}s`));
+    if (chips.length) panel.appendChild(el('div', {class:'chips'}, chips));
+
+    out.appendChild(panel);
+
+    // Show all fields
+    renderAllFields(data, out, ['recommendation', 'description', 'safe_to_cross', 'countdown_seconds']);
     return;
   }
 
-  const tryKeys = ['summary','description','safety_notes','landmarks','environment','safe_to_cross','countdown_seconds','recommendation','details'];
-  for (const k of tryKeys){
-    if (k in data){
-      pairs.push([k.replaceAll('_',' ').replace(/\b\w/g, c=>c.toUpperCase()), asText(data[k])]);
-    }
+  // Scene understanding
+  const panel = el('div', {class:'panel'}, [
+    el('div', {class:'panel-title'}, '🧭 Scene Understanding'),
+  ]);
+
+  const mainText = data.summary || data.description || '';
+  if (mainText) panel.appendChild(el('div', {class:'big'}, asText(mainText)));
+
+  const chips = [];
+  if (Array.isArray(data.landmarks) && data.landmarks.length) {
+    chips.push(el('div', {class:'chip info'}, `📍 ${data.landmarks.length} landmark(s)`));
+    // Show landmarks
+    const landmarksList = el('div', {class:'detail-list', style:'margin-top:12px;'});
+    data.landmarks.forEach((lm, i) => {
+      landmarksList.appendChild(el('div', {class:'detail-item'}, [
+        el('strong', {}, `${i+1}. `),
+        document.createTextNode(asText(lm))
+      ]));
+    });
+    panel.appendChild(landmarksList);
   }
-  // Append remaining keys that are not already shown
-  for (const k of keys){
-    if (!tryKeys.includes(k)){
-      pairs.push([k.replaceAll('_',' ').replace(/\b\w/g, c=>c.toUpperCase()), asText(data[k])]);
-    }
-  }
-  out.appendChild(renderKV(knownTitle, pairs));
+  if (data.environment) chips.push(el('div', {class:'chip'}, `🏙️ ${data.environment}`));
+  if (chips.length) panel.appendChild(el('div', {class:'chips'}, chips));
+
+  out.appendChild(panel);
+
+  // Show all other fields
+  renderAllFields(data, out, ['summary', 'description', 'landmarks', 'environment']);
+}
+
+function renderAllFields(data, container, excludeKeys){
+  const keys = Object.keys(data || {}).filter(k => !excludeKeys.includes(k));
+  if (keys.length === 0) return;
+
+  const panel = el('div', {class:'panel expandable', style:'margin-top:12px; cursor:pointer;'}, [
+    el('div', {class:'panel-title', style:'display:flex; justify-content:space-between; align-items:center;'}, [
+      document.createTextNode('🔍 Additional Fields'),
+      el('span', {style:'font-size:12px; opacity:0.7;'}, '(click to expand)')
+    ]),
+    el('div', {class:'expand-content', style:'display:none; margin-top:12px;'},
+      keys.map(k => el('div', {class:'detail-item', style:'margin-bottom:8px;'}, [
+        el('strong', {style:'color:var(--primary);'}, k.replaceAll('_', ' ') + ': '),
+        document.createTextNode(asText(data[k]))
+      ]))
+    )
+  ]);
+
+  panel.addEventListener('click', () => {
+    const content = panel.querySelector('.expand-content');
+    const isExpanded = content.style.display !== 'none';
+    content.style.display = isExpanded ? 'none' : 'block';
+    panel.querySelector('.panel-title span').textContent = isExpanded ? '(click to expand)' : '(click to collapse)';
+  });
+
+  container.appendChild(panel);
 }
 
 async function uploadImageIfNeeded(){

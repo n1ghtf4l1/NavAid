@@ -10,7 +10,7 @@
   <header class="site-header">
     <div class="container nav">
       <a class="brand" href="./index.html">
-        <span class="logo-badge"><img src="../demo_data/LOGO/LOGO2.png" alt="NavAid" /></span>
+        <span class="logo-badge"><img src="./assets/images/LOGO2.png" alt="NavAid" /></span>
         <span>NavAid</span>
       </a>
       <nav class="nav-links">
@@ -25,40 +25,106 @@
   <main class="container section">
     <div class="grid-2" style="align-items:center;">
       <div>
-        <div class="pill">Why NavAid</div>
-        <h1 style="margin:8px 0 12px;">Assistive navigation that stays out of your way.</h1>
-        <p class="prose">NavAid helps visually impaired pedestrians navigate everyday environments safely with concise descriptions, proactive hazard warnings, and smarter crossings — delivered through natural voice and intuitive haptics.</p>
-        <div class="cards" style="margin-top:16px; grid-template-columns: repeat(2, minmax(0,1fr));">
-          <div class="card"><h3>Low cognitive load</h3><p>Short, actionable guidance when it matters most.</p></div>
-          <div class="card"><h3>Safety‑first</h3><p>Bearing, proximity, and confidence determine urgency.</p></div>
-          <div class="card"><h3>Orientation</h3><p>Landmarks and structure over aesthetics; clarity over detail.</p></div>
-          <div class="card"><h3>Privacy‑aware</h3><p>Only the essentials needed for guidance.</p></div>
+        <div class="pill reveal">Why NavAid</div>
+        <h1 class="reveal" style="margin:8px 0 12px;">Assistive navigation that stays out of your way.</h1>
+        <p class="prose reveal">NavAid helps visually impaired pedestrians navigate everyday environments safely with concise descriptions, proactive hazard warnings, and smarter crossings — delivered through natural voice and intuitive haptics.</p>
+        <div class="cards" style="margin-top:24px; grid-template-columns: repeat(2, minmax(0,1fr));">
+          <div class="card reveal">
+            <div class="kicker">🧠 Cognitive</div>
+            <h3>Low cognitive load</h3>
+            <p>Concise, actionable guidance delivered exactly when needed — no information overload.</p>
+          </div>
+          <div class="card reveal">
+            <div class="kicker">🛡️ Safety</div>
+            <h3>Safety‑first design</h3>
+            <p>Bearing, proximity, and confidence scores determine urgency and delivery priority.</p>
+          </div>
+          <div class="card reveal">
+            <div class="kicker">🗺️ Spatial</div>
+            <h3>Clear orientation</h3>
+            <p>Landmarks and structural cues over visual aesthetics — prioritizing clarity and utility.</p>
+          </div>
+          <div class="card reveal">
+            <div class="kicker">🔐 Private</div>
+            <h3>Privacy‑aware</h3>
+            <p>Minimal data collection — only what's essential for safe, personalized navigation guidance.</p>
+          </div>
         </div>
       </div>
-      <div class="hero-media">
+      <div class="hero-media reveal">
         <div class="glow"></div>
-        <div class="frame"><img src="./assets/images/undraw_walk-in-the-city_tk65.png" alt="City walking illustration"></div>
+        <div class="frame animate-float"><img src="./assets/images/undraw_walk-in-the-city_tk65.png" alt="City walking illustration"></div>
       </div>
     </div>
 
     <section class="section">
       <h2 style="text-align:center;">Who is it for?</h2>
-      <p class="section-sub">Blind and low‑vision users navigating complex outdoor and indoor spaces.</p>
-      <div class="grid-3" style="margin-top:12px;">
-        <div class="card"><h3>Urban walking</h3><p>Maintain awareness of obstacles and flow.</p></div>
-        <div class="card"><h3>Crossings</h3><p>Understand signals and when to Deep Analyze.</p></div>
-        <div class="card"><h3>Orientation</h3><p>Know what’s around you without visual clutter.</p></div>
+      <p class="section-sub">Designed for blind and low‑vision pedestrians who need concise, low‑effort guidance to move safely and confidently.</p>
+      <div class="grid-3" style="margin-top:24px;">
+        <div class="card reveal">
+          <div class="kicker">👥 Primary Users</div>
+          <h3>Blind & low‑vision users</h3>
+          <p>Total or partial vision loss, white cane users, and guide dog handlers navigating urban environments.</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">👁️ Field Loss</div>
+          <h3>Retinitis Pigmentosa</h3>
+          <p>Progressive peripheral vision loss affecting 1-1.5M people worldwide — NavAid's primary focus demographic.</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">⏱️ Age-related</div>
+          <h3>Vision impairment</h3>
+          <p>Glaucoma, macular degeneration, and other conditions impacting daily mobility and independence.</p>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:20px;">
+        <div class="card reveal">
+          <div class="kicker">🏙️ Environments</div>
+          <h3>Urban & indoor spaces</h3>
+          <p>Sidewalks, intersections, transit stops, campuses, shopping centers, and unfamiliar areas.</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">🎯 Core Tasks</div>
+          <h3>Wayfinding & safety</h3>
+          <p>Scene orientation, hazard awareness, street crossings, and turn-by-turn navigation.</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">🧠 Design Goal</div>
+          <h3>Low cognitive load</h3>
+          <p>Short, actionable audio prompts that don't overwhelm — just what you need, when you need it.</p>
+        </div>
       </div>
     </section>
 
     <section class="section">
       <h2 style="text-align:center;">Team</h2>
-      <div class="grid-3" style="margin-top:12px;">
-        <div class="card"><h3>Prabhav</h3></div>
-        <div class="card"><h3>Mukund</h3></div>
-        <div class="card"><h3>Sandesh</h3></div>
-        <div class="card"><h3>Anubhav</h3></div>
-        <div class="card"><h3>Claude Code</h3></div>
+      <p class="section-sub">Built by a dedicated team of developers and researchers passionate about accessible navigation.</p>
+      <div class="grid-3" style="margin-top:24px;">
+        <div class="card reveal">
+          <div class="kicker">👨‍💻 Developer</div>
+          <h3>Prabhav Singh</h3>
+          <p>Full-stack development, iOS app, and AI integration</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">🧠 AI Engineer</div>
+          <h3>Mukund Iyengar</h3>
+          <p>ML models, prompt engineering, and perception systems</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">⚙️ Backend</div>
+          <h3>Sandesh Rangreji</h3>
+          <p>API architecture, data pipelines, and infrastructure</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">🔬 Researcher</div>
+          <h3>Anubhav De</h3>
+          <p>User research, accessibility design, and testing</p>
+        </div>
+        <div class="card reveal">
+          <div class="kicker">🤖 Honorary Partner</div>
+          <h3>Claude Code</h3>
+          <p>Development assistant, code generation, and rapid prototyping</p>
+        </div>
       </div>
     </section>
   </main>

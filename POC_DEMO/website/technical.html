@@ -10,7 +10,7 @@
   <header class="site-header">
     <div class="container nav">
       <a class="brand" href="./index.html">
-        <span class="logo-badge"><img src="../demo_data/LOGO/LOGO2.png" alt="NavAid" /></span>
+        <span class="logo-badge"><img src="./assets/images/LOGO2.png" alt="NavAid" /></span>
         <span>NavAid</span>
       </a>
       <nav class="nav-links">
@@ -23,39 +23,123 @@
   </header>
 
   <main class="container section">
-    <div class="grid-2" style="align-items:start;">
-      <div class="prose">
-        <div class="pill">Technical Overview</div>
-        <h1 style="margin:8px 0 12px;">Fast, clear, and reliable guidance.</h1>
-        <h2>ML Stack</h2>
-        <ul>
-          <li><strong>Scene & Hazards</strong>: Google Gemini (2.5 Flash / 2.0 Flash) chosen by context for speed vs. depth.</li>
-          <li><strong>Navigation Guidance</strong>: Maps instruction + image → normalized schema + haptic recommendation.</li>
-          <li><strong>TTS</strong>: Coqui VITS tuned for clarity and low listener fatigue.</li>
-          <li><strong>Transcription</strong>: Whisper (Base) for spoken input.</li>
-        </ul>
-
-        <h2>Key Capabilities</h2>
-        <ul>
-          <li>Hazard detection with bearing, proximity, confidence, and haptics.</li>
-          <li>Scene descriptions that prioritize orientation and safety.</li>
-          <li>Traffic signal understanding with Deep Analyze for crossings.</li>
-        </ul>
-      </div>
-      <div class="hero-media">
-        <div class="glow"></div>
-        <div class="frame"><img src="./assets/images/undraw_visionary-technology_f6b3.png" alt="System illustration" /></div>
-      </div>
+    <div style="text-align: center; max-width: 800px; margin: 0 auto 60px;">
+      <div class="pill reveal">Technical Overview</div>
+      <h1 class="reveal" style="margin: 16px 0 20px; font-size: clamp(36px, 5vw, 48px); font-weight: 800;">Fast, clear, and reliable guidance.</h1>
+      <p class="reveal" style="color: var(--muted); font-size: 18px; line-height: 1.6;">Powered by state-of-the-art AI models optimized for real-time assistive navigation.</p>
     </div>
 
-    <section class="section">
-      <h2 style="text-align:center;">TTS Results</h2>
-      <p class="section-sub">Quality, latency, RTF, and WER comparisons used to select voices.</p>
+    <!-- ML Stack Cards -->
+    <section style="margin-bottom: 80px;">
+      <h2 style="text-align: center; margin-bottom: 40px;">🤖 ML Stack</h2>
+      <div class="cards">
+        <div class="card reveal tech-card" data-tech="vision">
+          <div class="kicker">🧠 Vision AI</div>
+          <h3>Google Gemini</h3>
+          <p><strong>2.5 Flash:</strong> Fast scene understanding<br>
+          <strong>2.0 Flash:</strong> Deep traffic analysis</p>
+          <div class="tech-detail">
+            Dynamically selected based on context and latency requirements. Flash 2.5 for quick hazard detection, Flash 2.0 for complex intersection analysis.
+          </div>
+        </div>
+
+        <div class="card reveal tech-card" data-tech="nav">
+          <div class="kicker">🗺️ Navigation</div>
+          <h3>Real-time Guidance</h3>
+          <p>Maps instructions + image analysis → structured output with haptic cues</p>
+          <div class="tech-detail">
+            Combines Google Maps turn-by-turn directions with visual perception to generate bearing-aware instructions and hazard warnings.
+          </div>
+        </div>
+
+        <div class="card reveal tech-card" data-tech="tts">
+          <div class="kicker">🎙️ Text-to-Speech</div>
+          <h3>Coqui VITS</h3>
+          <p>Local model optimized for clarity and low latency</p>
+          <div class="tech-detail">
+            Rigorously tested for Real-Time Factor &lt; 0.1, Word Error Rate &lt; 10%, and reduced listener fatigue. See evaluation below.
+          </div>
+        </div>
+
+        <div class="card reveal tech-card" data-tech="asr">
+          <div class="kicker">✍️ Speech Recognition</div>
+          <h3>OpenAI Whisper</h3>
+          <p>Base model for accurate voice transcription</p>
+          <div class="tech-detail">
+            Handles user voice commands during profile setup and trip configuration with high accuracy across accents and environments.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Capabilities -->
+    <section style="margin-bottom: 80px;">
+      <h2 style="text-align: center; margin-bottom: 40px;">🎯 Key Capabilities</h2>
+      <div class="grid-2">
+        <div class="capability-list">
+          <div class="capability-item reveal">
+            <div class="cap-icon">🚧</div>
+            <div>
+              <h3>Hazard Detection</h3>
+              <p>Precise bearing (front/left/right), proximity estimates, confidence scores, and intelligent haptic pattern selection.</p>
+            </div>
+          </div>
+
+          <div class="capability-item reveal">
+            <div class="cap-icon">🧭</div>
+            <div>
+              <h3>Scene Understanding</h3>
+              <p>Landmark-focused descriptions prioritizing orientation, structural cues, and wayfinding over visual aesthetics.</p>
+            </div>
+          </div>
+
+          <div class="capability-item reveal">
+            <div class="cap-icon">🚦</div>
+            <div>
+              <h3>Traffic Analysis</h3>
+              <p>Signal state interpretation with "Deep Analyze" mode for complex intersections and countdown timers.</p>
+            </div>
+          </div>
+
+          <div class="capability-item reveal">
+            <div class="cap-icon">🗺️</div>
+            <div>
+              <h3>Google Maps Integration</h3>
+              <p>Turn-by-turn route guidance synchronized with real-time visual perception for context-aware instructions.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-media reveal">
+          <div class="glow"></div>
+          <div class="frame animate-float">
+            <img src="./assets/images/undraw_visionary-technology_f6b3.png" alt="System architecture" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TTS Evaluation -->
+    <section>
+      <h2 style="text-align: center; margin-bottom: 16px;">📊 TTS Model Evaluation</h2>
+      <p class="section-sub">Comprehensive testing across 100 navigation instructions to select the optimal voice model.</p>
       <div class="gallery">
-        <img src="../../MILESTONE1/TTS_METRICS/results/plots/footprint_comparison.png" alt="TTS model footprint comparison" />
-        <img src="../../MILESTONE1/TTS_METRICS/results/plots/latency_distribution.png" alt="TTS latency distribution" />
-        <img src="../../MILESTONE1/TTS_METRICS/results/plots/rtf_comparison.png" alt="TTS RTF comparison" />
-        <img src="../../MILESTONE1/TTS_METRICS/results/plots/wer_comparison.png" alt="TTS WER comparison" />
+        <div class="plot-card reveal">
+          <img src="../../MILESTONE1/TTS_METRICS/results/plots/footprint_comparison.png" alt="Model footprint comparison" />
+          <div class="plot-label">Model Size & Memory Footprint</div>
+        </div>
+        <div class="plot-card reveal">
+          <img src="../../MILESTONE1/TTS_METRICS/results/plots/latency_distribution.png" alt="Latency distribution" />
+          <div class="plot-label">Synthesis Latency Distribution</div>
+        </div>
+        <div class="plot-card reveal">
+          <img src="../../MILESTONE1/TTS_METRICS/results/plots/rtf_comparison.png" alt="RTF comparison" />
+          <div class="plot-label">Real-Time Factor (RTF &lt; 0.1 target)</div>
+        </div>
+        <div class="plot-card reveal">
+          <img src="../../MILESTONE1/TTS_METRICS/results/plots/wer_comparison.png" alt="WER comparison" />
+          <div class="plot-label">Word Error Rate via Whisper ASR</div>
+        </div>
       </div>
     </section>
   </main>
@@ -73,5 +157,4 @@
 
   <script type="module" src="./js/main.js"></script>
 </body>
-<!-- Note: The image paths above reference the repository layout for local demo. -->
 </html>
