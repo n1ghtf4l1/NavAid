@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Technical — NavAid</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="./index.html">
+        <span class="logo-badge"><img src="../demo_data/LOGO/LOGO2.png" alt="NavAid" /></span>
+        <span>NavAid</span>
+      </a>
+      <nav class="nav-links">
+        <a href="./index.html">Home</a>
+        <a href="./about.html">About</a>
+        <a href="./technical.html">Technical</a>
+        <a href="./demo.html">Demo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section">
+    <div class="grid-2" style="align-items:start;">
+      <div class="prose">
+        <div class="pill">Technical Overview</div>
+        <h1 style="margin:8px 0 12px;">Fast, clear, and reliable guidance.</h1>
+        <h2>ML Stack</h2>
+        <ul>
+          <li><strong>Scene & Hazards</strong>: Google Gemini (2.5 Flash / 2.0 Flash) chosen by context for speed vs. depth.</li>
+          <li><strong>Navigation Guidance</strong>: Maps instruction + image → normalized schema + haptic recommendation.</li>
+          <li><strong>TTS</strong>: Coqui VITS tuned for clarity and low listener fatigue.</li>
+          <li><strong>Transcription</strong>: Whisper (Base) for spoken input.</li>
+        </ul>
+
+        <h2>Key Capabilities</h2>
+        <ul>
+          <li>Hazard detection with bearing, proximity, confidence, and haptics.</li>
+          <li>Scene descriptions that prioritize orientation and safety.</li>
+          <li>Traffic signal understanding with Deep Analyze for crossings.</li>
+        </ul>
+      </div>
+      <div class="hero-media">
+        <div class="glow"></div>
+        <div class="frame"><img src="./assets/images/undraw_visionary-technology_f6b3.png" alt="System illustration" /></div>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2 style="text-align:center;">TTS Results</h2>
+      <p class="section-sub">Quality, latency, RTF, and WER comparisons used to select voices.</p>
+      <div class="gallery">
+        <img src="../../MILESTONE1/TTS_METRICS/results/plots/footprint_comparison.png" alt="TTS model footprint comparison" />
+        <img src="../../MILESTONE1/TTS_METRICS/results/plots/latency_distribution.png" alt="TTS latency distribution" />
+        <img src="../../MILESTONE1/TTS_METRICS/results/plots/rtf_comparison.png" alt="TTS RTF comparison" />
+        <img src="../../MILESTONE1/TTS_METRICS/results/plots/wer_comparison.png" alt="TTS WER comparison" />
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container row">
+      <div>© NavAid • Assistive navigation</div>
+      <div class="row" style="gap:14px">
+        <a href="./about.html">About</a>
+        <a href="./technical.html">Technical</a>
+        <a href="./demo.html">Demo</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+<!-- Note: The image paths above reference the repository layout for local demo. -->
+</html>

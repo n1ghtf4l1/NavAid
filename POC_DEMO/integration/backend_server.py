@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 import io
 import json
+import uuid
+from werkzeug.utils import secure_filename
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "MILESTONE1" / "GUIDANCE_METRICS"))
@@ -66,6 +68,10 @@ traffic_prompt = load_prompt("deep_analyze_traffic.md")
 navigation_guidance_prompt = load_prompt("navigation_guidance_v3.md")
 
 print("✅ All prompts loaded")
+
+# Simple uploads directory for web demo
+UPLOADS_DIR = Path(__file__).parent.parent / "uploads"
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
 # User profile path (iOS app saves to Documents directory)
 # For demo, we'll check if profile exists and load it
@@ -319,6 +325,40 @@ def text_to_speech():
 
     except Exception as e:
         print(f"❌ TTS error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/upload-image', methods=['POST'])
+def upload_image():
+    """
+    Accept an image file upload and return a local filesystem path for downstream endpoints.
+
+    Response: {"image_path": "/absolute/path/to/saved.jpg"}
+    """
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided (field 'image')"}), 400
+
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({"error": "Empty filename"}), 400
+
+        # Sanitize and generate unique filename to avoid collisions
+        filename = secure_filename(file.filename)
+        ext = os.path.splitext(filename)[1]
+        unique_name = f"upload_{uuid.uuid4().hex}{ext or '.jpg'}"
+        save_path = UPLOADS_DIR / unique_name
+
+        file.save(save_path)
+        abs_path = str(save_path.resolve())
+        print(f"⬆️  Received upload: {filename} -> {abs_path}")
+
+        return jsonify({"image_path": abs_path})
+
+    except Exception as e:
+        print(f"❌ Upload error: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
