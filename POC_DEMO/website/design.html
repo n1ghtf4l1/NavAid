@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design — NavAid</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="./index.html">
+        <span class="logo-badge"><img src="./assets/images/LOGO2.png" alt="NavAid" /></span>
+        <span>NavAid</span>
+      </a>
+      <nav class="nav-links">
+        <a href="./index.html">Home</a>
+        <a href="./about.html">About</a>
+        <a href="./design.html">Design</a>
+        <a href="./technical.html">Technical</a>
+        <a href="./demo.html">Demo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section">
+    <!-- Hero Section -->
+    <div class="grid-2" style="align-items:center; margin-bottom: 100px;">
+      <div>
+        <div class="pill reveal">Human-Centered Design</div>
+        <h1 class="reveal" style="margin:16px 0 20px; font-size: clamp(36px, 5vw, 48px); font-weight: 800;">Built for peripheral vision loss.</h1>
+        <p class="reveal" style="color: var(--muted); font-size: 18px; line-height: 1.6; margin-bottom: 32px;">Every design decision optimizes for users with Retinitis Pigmentosa — those who can see centrally but miss hazards from the side.</p>
+      </div>
+      <div class="hero-media reveal">
+        <div class="glow"></div>
+        <div class="frame animate-float">
+          <img src="./assets/images/undraw_visionary-technology_f6b3.png" alt="Accessible design illustration" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Design Principles -->
+    <section style="margin-bottom: 80px;">
+      <h2 style="text-align: center; margin-bottom: 40px;">Design Principles</h2>
+      <div class="cards">
+        <div class="card reveal design-principle-card">
+          <div class="kicker">🎙️ Audio-First</div>
+          <h3>Sound over sight</h3>
+          <p>Visual overlays don't work when you can't see the periphery.</p>
+          <div class="principle-detail">
+            Spatial audio with bearing (left/right/front) alerts users to lateral hazards in real-time. RP users depend on auditory cues and have limited value for visual overlays — making audio the primary output modality.
+          </div>
+        </div>
+
+        <div class="card reveal design-principle-card">
+          <div class="kicker">🔲 Minimal UI</div>
+          <h3>3 buttons only</h3>
+          <p>Start, Pause, End. No complex menus or tiny controls.</p>
+          <div class="principle-detail">
+            Large touch targets optimized for users with reduced contrast sensitivity and field loss. Reduced clutter prevents mis-taps and cognitive overload during navigation. All controls within thumb reach for one-handed use.
+          </div>
+        </div>
+
+        <div class="card reveal design-principle-card">
+          <div class="kicker">⚡ Concise Warnings</div>
+          <h3>2-5 words max</h3>
+          <p>"Vehicle left, 3 meters." Instant, actionable alerts.</p>
+          <div class="principle-detail">
+            Verbose descriptions create cognitive overload while walking. High recall for lateral hazards takes priority over detailed scene descriptions. Users need to react quickly — not process paragraphs.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Interface Screenshots -->
+    <section style="margin-bottom: 80px;">
+      <h2 style="text-align: center; margin-bottom: 16px;">App Interface</h2>
+      <p class="section-sub">Clean, accessible, and optimized for one-handed use with VoiceOver support.</p>
+
+      <div class="grid-3" style="margin-top: 40px; gap: 24px;">
+        <div class="card reveal" style="padding: 0; overflow: hidden;">
+          <img src="./assets/images/StartScreen.png" alt="NavAid start screen" style="width: 100%; height: auto; display: block;" />
+          <div style="padding: 20px;">
+            <h4 style="margin: 0 0 8px 0;">Start Screen</h4>
+            <p style="margin: 0; font-size: 14px; color: var(--muted);">Three large buttons with high contrast borders and VoiceOver labels.</p>
+          </div>
+        </div>
+
+        <div class="card reveal" style="padding: 0; overflow: hidden;">
+          <img src="./assets/images/InTrip.png" alt="In-trip interface" style="width: 100%; height: auto; display: block;" />
+          <div style="padding: 20px;">
+            <h4 style="margin: 0 0 8px 0;">In-Trip View</h4>
+            <p style="margin: 0; font-size: 14px; color: var(--muted);">Audio-first guidance with minimal visual display during navigation.</p>
+          </div>
+        </div>
+
+        <div class="card reveal" style="padding: 0; overflow: hidden;">
+          <img src="./assets/images/UserSetupScreen.png" alt="User setup screen" style="width: 100%; height: auto; display: block;" />
+          <div style="padding: 20px;">
+            <h4 style="margin: 0 0 8px 0;">User Setup</h4>
+            <p style="margin: 0; font-size: 14px; color: var(--muted);">Voice-based profile creation with Whisper speech recognition.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Accessibility Features -->
+    <section>
+      <h2 style="text-align: center; margin-bottom: 40px;">Accessibility Features</h2>
+      <div class="grid-3">
+        <div class="card reveal">
+          <div class="kicker">🗣️ VoiceOver</div>
+          <h3>Full screen reader support</h3>
+          <p>Every UI element has descriptive labels. Navigation state changes are announced. Complete operation via VoiceOver gestures.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="kicker">🎨 High Contrast</div>
+          <h3>WCAG AAA compliance</h3>
+          <p>Text meets 7:1 contrast ratio minimum. Thick, clearly defined button borders. Works in bright sunlight and low-light.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="kicker">👍 One-Handed Use</div>
+          <h3>Thumb-friendly layout</h3>
+          <p>All controls within thumb reach. No two-hand gestures required. White cane users can navigate without putting it down.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="kicker">🎤 Voice Input</div>
+          <h3>Speech recognition</h3>
+          <p>Profile setup via voice. Whisper ASR handles accents and background noise. Reduces typing burden for low-vision users.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="kicker">🔐 Privacy</div>
+          <h3>On-device processing</h3>
+          <p>TTS runs locally. User profile stored on-device only. No persistent image/video storage. Minimal cloud usage.</p>
+        </div>
+
+        <div class="card reveal">
+          <div class="kicker">⚙️ Customizable</div>
+          <h3>User preferences</h3>
+          <p>Adjust verbosity, haptic intensity, and warning thresholds. Personalized hazard filters. Adaptive to individual needs.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container row">
+      <div>© NavAid • Assistive navigation</div>
+      <div class="row" style="gap:14px">
+        <a href="./about.html">About</a>
+        <a href="./design.html">Design</a>
+        <a href="./technical.html">Technical</a>
+        <a href="./demo.html">Demo</a>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

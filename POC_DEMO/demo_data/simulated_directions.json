@@ -1,91 +1,91 @@
 {
   "trip_metadata": {
-    "origin": "Campus Center",
-    "destination": "Library Building",
-    "total_distance_meters": 200,
-    "estimated_duration_minutes": 3,
+    "origin": "Starting Point",
+    "destination": "Campus Building",
+    "total_distance_meters": 250,
+    "estimated_duration_minutes": 4,
     "num_steps": 5
   },
   "instructions": [
     {
       "step_number": 1,
-      "instruction": "Head straight on the main walkway",
-      "distance_meters": 50,
-      "duration_seconds": 40,
+      "instruction": "Head straight along the sidewalk",
+      "distance_meters": 60,
+      "duration_seconds": 45,
       "maneuver": "straight",
-      "tts_text": "Head straight on the main walkway for 50 meters"
+      "tts_text": "Head straight along the sidewalk for 60 meters. Trees on your left, buildings on your right."
     },
     {
       "step_number": 2,
-      "instruction": "Continue straight past the fountain",
-      "distance_meters": 40,
-      "duration_seconds": 30,
+      "instruction": "Approach the intersection",
+      "distance_meters": 50,
+      "duration_seconds": 40,
       "maneuver": "straight",
-      "tts_text": "Continue straight past the fountain on your left"
+      "tts_text": "Continue forward approaching the intersection. Traffic lights ahead."
     },
     {
       "step_number": 3,
-      "instruction": "Continue forward",
+      "instruction": "Cross at the traffic light",
       "distance_meters": 45,
-      "duration_seconds": 35,
+      "duration_seconds": 50,
       "maneuver": "straight",
-      "tts_text": "Continue forward for 45 meters"
+      "tts_text": "Cross the intersection at the traffic light. Wait for pedestrian signal. Watch for vehicles."
     },
     {
       "step_number": 4,
-      "instruction": "Approach the crosswalk",
-      "distance_meters": 30,
-      "duration_seconds": 25,
+      "instruction": "Continue on the sidewalk past shops",
+      "distance_meters": 55,
+      "duration_seconds": 45,
       "maneuver": "straight",
-      "tts_text": "Approaching crosswalk ahead. Prepare to use Deep Analyze for the traffic light"
+      "tts_text": "Continue straight on the sidewalk. Passing retail shops on your right."
     },
     {
       "step_number": 5,
-      "instruction": "You have arrived at your destination",
-      "distance_meters": 0,
-      "duration_seconds": 0,
+      "instruction": "Arrive at your destination",
+      "distance_meters": 40,
+      "duration_seconds": 35,
       "maneuver": "destination",
-      "tts_text": "You have arrived at the Library Building"
+      "tts_text": "Approaching pedestrian crossing. Your destination, the campus building, is ahead on your left."
     }
   ],
   "photo_timing": {
-    "description": "Photos analyzed every 5 seconds during the trip",
+    "description": "Photos captured every 5 seconds during the trip",
     "photo_interval_seconds": 5,
     "total_photos_needed": 5,
-    "photo_naming_convention": "trip_photo_01.png through trip_photo_05.png",
-    "photo_location_guide": "5 sequential photos showing the walking route from Campus Center to Library"
+    "photo_naming_convention": "trip_photo_01.jpeg through trip_photo_05.jpeg",
+    "photo_location_guide": "5 sequential photos showing urban walking route with intersection crossing"
   },
   "hazard_scenarios": {
-    "description": "Demo scenario with 5 photos, 1 traffic light, 1 scene",
+    "description": "Urban navigation scenario with 5 photos including intersection crossing",
     "scenarios": [
       {
         "photo_number": 1,
-        "hazard": "Clear path - trip_photo_01.png",
+        "hazard": "Clear sidewalk path - trip_photo_01.jpeg",
         "step_reference": 1
       },
       {
         "photo_number": 2,
-        "hazard": "Clear path - trip_photo_02.png",
+        "hazard": "Intersection ahead with traffic lights - trip_photo_02.jpeg",
         "step_reference": 2
       },
       {
         "photo_number": 3,
-        "hazard": "Clear path - trip_photo_03.png",
+        "hazard": "Active traffic at intersection, vehicle stopped at red light - trip_photo_03.jpeg (triggers Deep Analyze for traffic light status)",
         "step_reference": 3
       },
       {
         "photo_number": 4,
-        "hazard": "Traffic light detected - trip_photo_04.png (triggers Deep Analyze)",
+        "hazard": "Clear sidewalk, pedestrian ahead - trip_photo_04.jpeg",
         "step_reference": 4
       },
       {
         "photo_number": 5,
-        "hazard": "Destination - trip_photo_05.png",
+        "hazard": "Pedestrian crossing zone, destination ahead - trip_photo_05.jpeg",
         "step_reference": 5
       }
     ],
-    "traffic_light_photo": "traffic_lights/traffic_01.png - Used when user presses Deep Analyze button",
-    "scene_photo": "scene_understanding/scene_01.png - Used when user presses Scene Understanding button"
+    "traffic_light_photo": "traffic_lights/traffic_01.jpeg - Used when user presses Deep Analyze button at intersection",
+    "scene_photo": "scene_understanding/scene_01.jpeg - Used when user presses Scene Understanding button"
   },
-  "notes": "Simplified 5-step demo matching the 5 available trip photos. Traffic light and scene understanding photos are loaded on demand when user presses respective buttons."
+  "notes": "5-step urban walking route with intersection crossing. Traffic light analysis available at step 3. Route includes sidewalk navigation, intersection crossing, and arrival at campus building destination."
 }

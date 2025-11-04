@@ -29,12 +29,13 @@ from gemini_api.navigation_guidance_schema import NavigationGuidanceOutput
 app = Flask(__name__)
 CORS(app)  # Enable CORS for iOS app
 
-# Initialize Gemini client
+# Initialize Gemini API key
 api_key = os.getenv("GOOGLE_API_KEY")
 if not api_key:
     print("❌ ERROR: GOOGLE_API_KEY not set!")
     sys.exit(1)
 
+# Default Gemini client (for mobile app)
 gemini_client = GeminiHazardClient(
     api_key=api_key,
     model_name="gemini-2.5-flash",
@@ -43,14 +44,55 @@ gemini_client = GeminiHazardClient(
     rpm_limit=0  # No rate limiting for demo
 )
 
-# Initialize TTS (Coqui VITS)
+def get_gemini_client(model_name="gemini-2.5-flash", temperature=0.2, top_p=0.8):
+    """Create a Gemini client with specified model. Supports web demo model selection."""
+    return GeminiHazardClient(
+        api_key=api_key,
+        model_name=model_name,
+        temperature=temperature,
+        top_p=top_p,
+        rpm_limit=0
+    )
+
+# Initialize TTS (Coqui VITS default)
 try:
     from TTS.api import TTS
     tts_model = TTS("tts_models/en/ljspeech/vits")
-    print("✅ Coqui VITS loaded successfully")
+    print("✅ Coqui VITS (LJSpeech) loaded successfully")
 except Exception as e:
     print(f"⚠️  Warning: Coqui TTS not available: {e}")
     tts_model = None
+
+# TTS model mapping for web demo
+TTS_MODEL_MAP = {
+    "coqui_vits_ljspeech": "tts_models/en/ljspeech/vits",
+    "coqui_vits_vctk": "tts_models/en/vctk/vits",
+    "coqui_tacotron2": "tts_models/en/ljspeech/tacotron2-DDC",
+    "espeak": "espeak"  # Special case, not a Coqui model
+}
+
+def get_tts_model(model_id="coqui_vits_ljspeech"):
+    """Get TTS model instance. Supports web demo model selection."""
+    if model_id == "espeak":
+        # eSpeak not implemented in this backend, return default
+        print(f"⚠️  eSpeak requested but not implemented, using default VITS")
+        return tts_model, None
+
+    model_path = TTS_MODEL_MAP.get(model_id, "tts_models/en/ljspeech/vits")
+
+    # Return cached model if it's the default
+    if model_id == "coqui_vits_ljspeech" and tts_model is not None:
+        return tts_model, None
+
+    # Check if this is VCTK (multi-speaker model)
+    speaker_id = "p226" if model_id == "coqui_vits_vctk" else None
+
+    # Otherwise load the requested model
+    try:
+        return TTS(model_path), speaker_id
+    except Exception as e:
+        print(f"⚠️  Failed to load {model_id}, using default: {e}")
+        return tts_model, None
 
 # Load prompts
 PROMPTS_DIR = Path(__file__).parent.parent / "prompts"
@@ -154,26 +196,21 @@ def scene_understanding():
     """
     Endpoint for scene understanding.
 
-    Request: {"image_path": "/path/to/image.jpg"}
+    Request: {"image_path": "/path/to/image.jpg", "vision_model": "gemini-2.5-flash" (optional)}
     Response: SceneUnderstandingResponse JSON
     """
     try:
         data = request.json
         image_path = data.get('image_path')
+        vision_model = data.get('vision_model', 'gemini-2.5-flash')  # Default for mobile app compatibility
 
         if not image_path or not os.path.exists(image_path):
             return jsonify({"error": "Invalid image path"}), 400
 
-        print(f"🏙️  Analyzing scene: {os.path.basename(image_path)}")
+        print(f"🏙️  Analyzing scene: {os.path.basename(image_path)} with {vision_model}")
 
-        # Use Gemini 2.5 (more capable) for scene understanding
-        scene_client = GeminiHazardClient(
-            api_key=api_key,
-            model_name="gemini-2.5-flash",
-            temperature=0.3,
-            top_p=0.9,
-            rpm_limit=0
-        )
+        # Use specified model (web demo) or default (mobile app)
+        scene_client = get_gemini_client(model_name=vision_model, temperature=0.3, top_p=0.9)
 
         # Call Gemini API with user profile injected
         final_prompt = inject_user_profile(scene_prompt)
@@ -194,26 +231,21 @@ def deep_analyze_traffic():
     """
     Endpoint for traffic light analysis.
 
-    Request: {"image_path": "/path/to/image.jpg"}
+    Request: {"image_path": "/path/to/image.jpg", "vision_model": "gemini-2.0-flash" (optional)}
     Response: DeepAnalyzeTrafficResponse JSON
     """
     try:
         data = request.json
         image_path = data.get('image_path')
+        vision_model = data.get('vision_model', 'gemini-2.0-flash')  # Default for mobile app
 
         if not image_path or not os.path.exists(image_path):
             return jsonify({"error": "Invalid image path"}), 400
 
-        print(f"🚦 Analyzing traffic light: {os.path.basename(image_path)}")
+        print(f"🚦 Analyzing traffic light: {os.path.basename(image_path)} with {vision_model}")
 
-        # Use Gemini 2.0 Flash (fast for time-critical)
-        traffic_client = GeminiHazardClient(
-            api_key=api_key,
-            model_name="gemini-2.0-flash",
-            temperature=0.1,
-            top_p=0.8,
-            rpm_limit=0
-        )
+        # Use specified model (web demo) or default (mobile app)
+        traffic_client = get_gemini_client(model_name=vision_model, temperature=0.1, top_p=0.8)
 
         # Call Gemini API with user profile injected
         final_prompt = inject_user_profile(traffic_prompt)
@@ -236,7 +268,8 @@ def navigation_guidance():
 
     Request: {
         "navigation_instruction": "Head straight for 50 meters",
-        "image_path": "/path/to/image.jpg"
+        "image_path": "/path/to/image.jpg",
+        "vision_model": "gemini-2.5-flash" (optional)
     }
     Response: NavigationGuidanceResponse JSON
     """
@@ -244,6 +277,7 @@ def navigation_guidance():
         data = request.json
         navigation_instruction = data.get('navigation_instruction')
         image_path = data.get('image_path')
+        vision_model = data.get('vision_model', 'gemini-2.5-flash')  # Default for mobile app
 
         if not navigation_instruction:
             return jsonify({"error": "No navigation instruction provided"}), 400
@@ -251,7 +285,7 @@ def navigation_guidance():
         if not image_path or not os.path.exists(image_path):
             return jsonify({"error": "Invalid image path"}), 400
 
-        print(f"🗺️  Navigation guidance: {navigation_instruction[:50]}... + {os.path.basename(image_path)}")
+        print(f"🗺️  Navigation guidance: {navigation_instruction[:50]}... + {os.path.basename(image_path)} with {vision_model}")
 
         # Build combined prompt with navigation instruction
         base_prompt_with_profile = inject_user_profile(navigation_guidance_prompt)
@@ -267,8 +301,11 @@ def navigation_guidance():
 Analyze the photo and provide combined guidance following the schema above.
 """
 
+        # Use specified model (web demo) or default (mobile app)
+        nav_client = get_gemini_client(model_name=vision_model, temperature=0.2, top_p=0.8)
+
         # Call Gemini API with combined prompt
-        raw_dict, raw_text = gemini_client.analyze(Path(image_path), combined_prompt)
+        raw_dict, raw_text = nav_client.analyze(Path(image_path), combined_prompt)
 
         print(f"📤 Response: {raw_dict}")
 
@@ -290,7 +327,7 @@ def text_to_speech():
     """
     Endpoint for TTS audio generation.
 
-    Request: {"text": "Hello world"}
+    Request: {"text": "Hello world", "tts_model": "coqui_vits_ljspeech" (optional)}
     Response: WAV audio file (binary)
     """
     try:
@@ -299,14 +336,25 @@ def text_to_speech():
 
         data = request.json
         text = data.get('text')
+        tts_model_id = data.get('tts_model', 'coqui_vits_ljspeech')  # Default for mobile app
 
         if not text:
             return jsonify({"error": "No text provided"}), 400
 
-        print(f"🔊 Generating TTS: {text[:50]}...")
+        print(f"🔊 Generating TTS with {tts_model_id}: {text[:50]}...")
 
-        # Generate audio
-        wav = tts_model.tts(text)
+        # Get the requested TTS model and speaker ID (if multi-speaker)
+        selected_tts, speaker_id = get_tts_model(tts_model_id)
+
+        if selected_tts is None:
+            return jsonify({"error": "TTS model not available"}), 503
+
+        # Generate audio (with speaker parameter for multi-speaker models)
+        if speaker_id:
+            print(f"  Using speaker: {speaker_id}")
+            wav = selected_tts.tts(text=text, speaker=speaker_id)
+        else:
+            wav = selected_tts.tts(text=text)
 
         # Convert to WAV bytes
         import scipy.io.wavfile as wavfile

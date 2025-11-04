@@ -51,5 +51,6 @@ logs/
 .claude
 claude.md 
 MILESTONE1/TTS_METRICS/condaenv.12mtrg0j.requirements.txt 
+POC_DEMO/uploads
 
 

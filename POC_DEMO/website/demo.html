@@ -16,6 +16,7 @@
       <nav class="nav-links">
         <a href="./index.html">Home</a>
         <a href="./about.html">About</a>
+        <a href="./design.html">Design</a>
         <a href="./technical.html">Technical</a>
         <a href="./demo.html">Demo</a>
       </nav>
@@ -23,69 +24,232 @@
   </header>
 
   <main class="container section">
-    <h1 style="text-align:center; margin-bottom: 8px;">Interactive Demo</h1>
-    <p class="section-sub">Experience NavAid's vision system in action. Upload your own photo or try a sample scene — results are formatted for clarity.</p>
+    <!-- Hero Section -->
+    <div style="text-align: center; max-width: 900px; margin: 0 auto 60px;">
+      <div class="pill reveal">Interactive Demo</div>
+      <h1 class="reveal" style="margin: 16px 0 20px; font-size: clamp(36px, 5vw, 48px); font-weight: 800;">Experience NavAid's Vision System.</h1>
+      <p class="reveal" style="color: var(--muted); font-size: 18px; line-height: 1.6;">Upload your photos, configure AI models, and see how NavAid analyzes scenes, detects hazards, and provides navigation guidance in real-time.</p>
+    </div>
 
-    <div class="demo-grid">
-      <div class="pane reveal">
-        <h3>🎛️ Configure Analysis</h3>
-        <div class="field">
-          <label>Analysis Mode</label>
-          <div class="segmented" id="modeSeg">
-            <button type="button" data-mode="scene" class="active">Scene</button>
-            <button type="button" data-mode="deep">Deep Analyze</button>
-            <button type="button" data-mode="trip">Navigation</button>
+    <!-- Analysis Modes -->
+    <section style="margin-bottom: 60px;">
+      <h2 style="text-align: center; margin-bottom: 16px;">Analysis Modes</h2>
+      <p class="section-sub">Three specialized modes for different navigation scenarios.</p>
+      <div class="cards" style="margin-top: 32px;">
+        <div class="card reveal">
+          <div class="kicker">🧭 Scene Understanding</div>
+          <h3>Environment Analysis</h3>
+          <p>Describes surroundings with orientation cues, landmarks, and structural features. Optimized for wayfinding in unfamiliar areas.</p>
+          <div style="margin-top: 12px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 8px; font-size: 13px; color: var(--muted);">
+            <strong>Use case:</strong> "What's around me?", "Describe this area", "Help me orient myself"
           </div>
         </div>
 
-        <div class="field" id="navField" style="display:none;">
-          <label for="navInstruction">Navigation Instruction</label>
-          <input id="navInstruction" type="text" placeholder="e.g., Continue straight for 20 meters" />
-        </div>
-
-        <div class="field">
-          <label>📷 Upload Image</label>
-          <label class="dropzone">
-            <input id="image" type="file" accept="image/*" />
-            <span class="dz-btn">📁 Choose a file</span>
-            <div style="margin-top:6px; font-size:12px;">PNG or JPG format</div>
-          </label>
-        </div>
-
-        <div class="field">
-          <label>Or Select Sample Scene</label>
-          <div class="samples">
-            <button type="button" class="sample-btn" data-path="/Users/prabhavsingh/Documents/CLASSES/Fall2025/NAVAID/POC_DEMO/demo_data/photos/scene_understanding/scene_01.png">🏙️ Street View</button>
-            <button type="button" class="sample-btn" data-path="/Users/prabhavsingh/Documents/CLASSES/Fall2025/NAVAID/POC_DEMO/demo_data/photos/traffic_lights/traffic_01.png">🚦 Traffic Signal</button>
-            <button type="button" class="sample-btn" data-path="/Users/prabhavsingh/Documents/CLASSES/Fall2025/NAVAID/POC_DEMO/demo_data/photos/trip_sequence/trip_photo_01.png">🚶 Navigation 1</button>
-            <button type="button" class="sample-btn" data-path="/Users/prabhavsingh/Documents/CLASSES/Fall2025/NAVAID/POC_DEMO/demo_data/photos/trip_sequence/trip_photo_02.png">🚶 Navigation 2</button>
-            <button type="button" class="sample-btn" data-path="/Users/prabhavsingh/Documents/CLASSES/Fall2025/NAVAID/POC_DEMO/demo_data/photos/trip_sequence/trip_photo_03.png">🚶 Navigation 3</button>
+        <div class="card reveal">
+          <div class="kicker">🚦 Deep Analyze Traffic</div>
+          <h3>Crossing Safety</h3>
+          <p>Analyzes traffic signals with countdown timers, crossing recommendations, and pedestrian signal states. Uses detailed traffic-specific prompts.</p>
+          <div style="margin-top: 12px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 8px; font-size: 13px; color: var(--muted);">
+            <strong>Use case:</strong> "Is it safe to cross?", "How long until the light changes?", "What's the signal state?"
           </div>
         </div>
 
-        <div class="row">
-          <button id="runBtn" class="btn btn-primary">▶️ Run Analysis</button>
-          <a class="btn btn-ghost" href="./technical.html">How it works</a>
+        <div class="card reveal">
+          <div class="kicker">🗺️ Navigation Guidance</div>
+          <h3>Turn-by-Turn + Hazards</h3>
+          <p>Combines Google Maps instructions with real-time hazard detection. Provides bearing-aware alerts, haptic recommendations, and traffic awareness.</p>
+          <div style="margin-top: 12px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 8px; font-size: 13px; color: var(--muted);">
+            <strong>Use case:</strong> Active navigation with lateral hazard warnings and crossing guidance
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Configuration Section -->
+    <section style="margin-bottom: 60px;">
+      <h2 style="text-align: center; margin-bottom: 32px;">Configure Analysis</h2>
+
+      <!-- Merged Configuration -->
+      <div class="pane reveal" style="margin-bottom: 24px;">
+        <h3 style="margin-top: 0;">Configuration</h3>
+
+        <!-- Analysis Mode -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600;">Analysis Mode</h4>
+          <div class="segmented" id="modeSeg" style="width: 100%;">
+            <button type="button" data-mode="scene" class="active" style="flex: 1;">🧭 Scene</button>
+            <button type="button" data-mode="deep" style="flex: 1;">🚦 Traffic</button>
+            <button type="button" data-mode="trip" style="flex: 1;">🗺️ Navigation</button>
+          </div>
+        </div>
+
+        <!-- Vision Model -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600;">Vision Model</h4>
+          <div class="model-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+            <button class="model-btn active" data-model-type="vision" data-value="gemini-2.5-flash">
+              <span class="model-name">Gemini 2.5 Flash</span>
+              <span class="model-desc">Best • Balanced speed & quality</span>
+            </button>
+            <button class="model-btn" data-model-type="vision" data-value="gemini-2.5-pro">
+              <span class="model-name">Gemini 2.5 Pro</span>
+              <span class="model-desc">Complex scenes • Highest quality</span>
+            </button>
+            <button class="model-btn" data-model-type="vision" data-value="gemini-2.5-flash-lite">
+              <span class="model-name">Gemini 2.5 Flash Lite</span>
+              <span class="model-desc">Fastest • Quick responses</span>
+            </button>
+            <button class="model-btn" data-model-type="vision" data-value="gemini-2.0-flash">
+              <span class="model-name">Gemini 2.0 Flash</span>
+              <span class="model-desc">Previous gen • Slightly slower</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TTS Model -->
+        <div>
+          <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600;">TTS Model</h4>
+          <div class="model-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+            <button class="model-btn active" data-model-type="tts" data-value="coqui_vits_ljspeech">
+              <span class="model-name">Coqui VITS ⭐</span>
+              <span class="model-desc">RTF 0.12 • Selected for NavAid</span>
+            </button>
+            <button class="model-btn" data-model-type="tts" data-value="coqui_vits_vctk">
+              <span class="model-name">VITS (VCTK)</span>
+              <span class="model-desc">RTF 0.14 • Multi-speaker</span>
+            </button>
+            <button class="model-btn" data-model-type="tts" data-value="coqui_tacotron2">
+              <span class="model-name">Tacotron2</span>
+              <span class="model-desc">RTF 0.25 • High quality</span>
+            </button>
+            <button class="model-btn" data-model-type="tts" data-value="espeak">
+              <span class="model-name">eSpeak-NG</span>
+              <span class="model-desc">RTF 0.02 • Baseline</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="pane reveal">
-        <h3>📸 Preview</h3>
-        <div id="preview" class="preview">No image selected</div>
-        <h3 style="margin-top:20px;">📊 Analysis Result</h3>
-        <div id="output" class="result">Results will appear here after analysis</div>
+      <!-- Navigation Instructions and Upload Images Side-by-Side -->
+      <div class="grid-2" style="gap: 24px; align-items: start;">
+        <!-- Navigation Instructions (for trip mode) -->
+        <div class="pane reveal" id="navInstructionsPane" style="display: none;">
+          <h3 style="margin-top: 0;">Navigation Instructions</h3>
+          <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Provide turn-by-turn instructions as text or upload a JSON file.</p>
+
+          <div class="field">
+            <label for="navInstruction">Manual Instruction</label>
+            <input id="navInstruction" type="text" placeholder="e.g., Continue straight for 20 meters" />
+          </div>
+
+          <div style="text-align: center; margin: 12px 0; color: var(--muted); font-size: 13px; font-weight: 600;">OR</div>
+
+          <div class="field">
+            <label>Upload JSON</label>
+            <label class="dropzone" style="cursor: pointer;">
+              <input id="navJson" type="file" accept="application/json,.json" />
+              <span class="dz-btn">📁 Choose JSON</span>
+              <div style="margin-top:6px; font-size:12px;">Array of {image_index, instruction}</div>
+            </label>
+            <div id="jsonPreview" style="margin-top: 12px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 8px; font-size: 13px; color: var(--muted); display: none;">
+              <strong>JSON loaded:</strong> <span id="jsonCount">0</span> instructions
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Upload -->
+        <div class="pane reveal" style="grid-column: 1 / -1;" id="uploadPane">
+          <h3 style="margin-top: 0;">Upload Images</h3>
+          <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Upload one or multiple images to analyze sequentially. Results appear as they complete.</p>
+
+          <div class="field">
+            <label class="dropzone" style="cursor: pointer;">
+              <input id="images" type="file" accept="image/*" multiple />
+              <span class="dz-btn">📁 Choose images</span>
+              <div style="margin-top:6px; font-size:12px;">PNG or JPG format • Select multiple files</div>
+            </label>
+          </div>
+
+          <div class="field">
+            <h4 style="margin: 8px 0; font-size: 14px; color: var(--muted);">Preview (<span id="imageCount">0</span> images selected)</h4>
+            <div id="previewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; min-height: 100px; border: 1px solid var(--card-border); border-radius: 12px; padding: 12px; background: linear-gradient(180deg, #f8f9ff, #f4f6ff);">
+              <div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 20px;">No images selected</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button id="runBtn" class="btn btn-primary" style="flex: 0 0 auto; min-width: 200px;">▶️ Run Analysis</button>
+            <a class="btn btn-ghost" href="./technical.html" style="flex: 0 0 auto;">How it works</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Demo Results Modal with Carousel -->
+  <div id="demoModal" class="demo-modal">
+    <div class="demo-modal-content" style="max-width: 1100px;">
+      <div class="demo-modal-header">
+        <h3>📊 Analysis Results <span id="resultCounter" style="font-weight: 400; font-size: 16px; color: var(--muted);"></span></h3>
+        <button class="demo-modal-close" onclick="closeDemoModal()">✕</button>
+      </div>
+      <div class="demo-modal-body">
+        <!-- Progress Bar -->
+        <div id="progressBar" style="display: none; margin-bottom: 20px; padding: 16px; background: rgba(108, 92, 231, 0.05); border-radius: 12px; border: 1px solid var(--card-border);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 600; font-size: 14px;">Processing...</span>
+            <span id="progressText" style="font-size: 14px; color: var(--muted);">0 / 0</span>
+          </div>
+          <div style="width: 100%; height: 8px; background: rgba(108, 92, 231, 0.1); border-radius: 4px; overflow: hidden;">
+            <div id="progressFill" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-strong)); transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <!-- Carousel Navigation -->
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+          <button id="prevBtn" class="carousel-btn" onclick="navigateResult(-1)" style="flex-shrink: 0;">
+            <span>←</span>
+          </button>
+          <div style="flex: 1; text-align: center; color: var(--muted); font-size: 14px;">
+            Navigate through results with arrow buttons or keyboard (← →)
+          </div>
+          <button id="nextBtn" class="carousel-btn" onclick="navigateResult(1)" style="flex-shrink: 0;">
+            <span>→</span>
+          </button>
+        </div>
+
+        <div class="demo-result-grid">
+          <div>
+            <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700;">📸 Image</h4>
+            <div id="modalPreview" class="demo-result-preview"></div>
+          </div>
+          <div>
+            <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700;">📊 Analysis</h4>
+            <div id="modalOutput" class="result"></div>
+          </div>
+        </div>
+
+        <div class="demo-audio-controls">
+          <button class="demo-play-btn" onclick="playAudioInstruction()">
+            <span>🔊</span>
+            <span>Play Audio Instruction</span>
+          </button>
+          <span style="font-size: 13px; color: var(--muted);">Hear what the app would speak to the user</span>
+        </div>
+
         <div style="margin-top:14px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 12px; color: var(--muted); font-size: 13px; line-height: 1.5;">
           <strong style="color: var(--primary);">ℹ️ Note:</strong> Voice output and haptic feedback patterns are generated based on the structured response and delivered through the iOS app interface.
         </div>
       </div>
     </div>
-  </main>
+  </div>
 
   <footer class="footer">
     <div class="container row">
       <div>© NavAid • Assistive navigation</div>
       <div class="row" style="gap:14px">
         <a href="./about.html">About</a>
+        <a href="./design.html">Design</a>
         <a href="./technical.html">Technical</a>
         <a href="./demo.html">Demo</a>
       </div>

@@ -1,7 +1,7 @@
 import { $, el, DEFAULT_API_BASE } from './main.js';
 
 function getApiBase(){
-  return DEFAULT_API_BASE; // fixed per feedback
+  return DEFAULT_API_BASE;
 }
 
 function mapEndpoint(mode){
@@ -13,30 +13,41 @@ function mapEndpoint(mode){
   }
 }
 
-function showPreview(file){
-  const holder = $('#preview');
+// Global state
+let selectedImages = [];
+let navInstructions = {}; // Map of image_index -> instruction
+let results = []; // Array of {image, data, mode, imageIndex}
+let currentResultIndex = 0;
+
+function showPreviewGrid(files){
+  const holder = $('#previewGrid');
+  const count = $('#imageCount');
+
   holder.innerHTML = '';
-  const img = new Image();
-  img.alt = 'preview';
-  img.onload = () => holder.appendChild(img);
-  img.src = URL.createObjectURL(file);
+  count.textContent = files.length;
+
+  if (files.length === 0){
+    holder.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 20px;">No images selected</div>';
+    return;
+  }
+
+  files.forEach((file, index) => {
+    const wrapper = el('div', {style: 'position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1; border: 2px solid var(--card-border);'});
+    const img = new Image();
+    img.alt = `preview ${index+1}`;
+    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+    img.onload = () => wrapper.appendChild(img);
+    img.src = URL.createObjectURL(file);
+
+    const badge = el('div', {style: 'position: absolute; top: 4px; right: 4px; background: rgba(108, 92, 231, 0.9); color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;'}, `${index + 1}`);
+    wrapper.appendChild(badge);
+    holder.appendChild(wrapper);
+  });
 }
 
 function setLoading(on){
   $('#runBtn').disabled = on;
-  $('#runBtn').textContent = on ? 'Analyzing…' : 'Run Analysis';
-}
-
-function renderKV(title, entries){
-  const wrap = el('div', {class: 'result'});
-  wrap.appendChild(el('h4', {}, title));
-  const grid = el('div', {class: 'kv'});
-  entries.forEach(([k,v]) => {
-    grid.appendChild(el('div', {class: 'k'}, k));
-    grid.appendChild(el('div', {class: 'v'}, v));
-  });
-  wrap.appendChild(grid);
-  return wrap;
+  $('#runBtn').textContent = on ? 'Analyzing…' : '▶️ Run Analysis';
 }
 
 function asText(v){
@@ -46,8 +57,8 @@ function asText(v){
   return String(v);
 }
 
-function renderResult(mode, data){
-  const out = $('#output');
+function renderResult(mode, data, container){
+  const out = container || $('#modalOutput');
   out.innerHTML = '';
 
   if (data.error){
@@ -206,13 +217,10 @@ function renderAllFields(data, container, excludeKeys){
   container.appendChild(panel);
 }
 
-async function uploadImageIfNeeded(){
-  const f = $('#image').files[0];
-  if (!f) return null; // maybe sample path chosen
-
+async function uploadImage(file){
   const apiBase = getApiBase();
   const fd = new FormData();
-  fd.append('image', f);
+  fd.append('image', file);
   const res = await fetch(`${apiBase}/api/upload-image`, {
     method: 'POST',
     body: fd,
@@ -224,74 +232,383 @@ async function uploadImageIfNeeded(){
   return j.image_path || null;
 }
 
-async function run(){
-  const mode = document.querySelector('.segmented button.active')?.dataset.mode || 'scene';
+function getSelectedModel(type){
+  const activeBtn = document.querySelector(`.model-btn.active[data-model-type="${type}"]`);
+  return activeBtn ? activeBtn.dataset.value : null;
+}
+
+async function processImage(file, imageIndex, mode, visionModel, ttsModel){
   const apiBase = getApiBase();
   const endpoint = mapEndpoint(mode);
 
-  setLoading(true);
-  try {
-    // Determine image path: uploaded file -> upload endpoint; else sample path; else manual path
-    let imagePath = null;
-    const sampleActive = document.querySelector('.sample-btn.active');
-    const sample = sampleActive?.dataset.path || '';
+  // Upload image
+  const imagePath = await uploadImage(file);
 
-    if ($('#image').files.length > 0){
-      imagePath = await uploadImageIfNeeded();
-    } else if (sample) {
-      imagePath = sample;
-    }
+  // Build payload
+  const payload = {
+    image_path: imagePath,
+    vision_model: visionModel,
+    tts_model: ttsModel
+  };
 
-    if (!imagePath){
-      renderResult(mode, { error: 'Please select an image (upload, sample, or enter a local path).' });
-      return;
-    }
-
-    const payload = { image_path: imagePath };
-    if (mode === 'trip'){
+  // Add navigation instruction if trip mode
+  if (mode === 'trip'){
+    if (navInstructions[imageIndex]) {
+      payload.navigation_instruction = navInstructions[imageIndex];
+    } else {
       payload.navigation_instruction = $('#navInstruction').value.trim() || 'Continue straight for 20 meters';
     }
+  }
 
-    const res = await fetch(`${apiBase}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
-    if (!res.ok){
-      renderResult(mode, data);
-    } else {
-      renderResult(mode, data);
+  // Make API call
+  const res = await fetch(`${apiBase}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json().catch(() => ({ error: 'Invalid JSON response' }));
+
+  if (!res.ok){
+    return { error: data.error || 'Analysis failed' };
+  }
+
+  return data;
+}
+
+async function run(){
+  const mode = document.querySelector('.segmented button.active')?.dataset.mode || 'scene';
+  const visionModel = getSelectedModel('vision') || 'gemini-2.5-flash';
+  const ttsModel = getSelectedModel('tts') || 'coqui_vits_ljspeech';
+
+  if (selectedImages.length === 0){
+    alert('Please upload at least one image to analyze.');
+    return;
+  }
+
+  // Reset results
+  results = [];
+  currentResultIndex = 0;
+
+  setLoading(true);
+
+  // Show modal with progress
+  showModal();
+  $('#progressBar').style.display = 'block';
+  $('#progressText').textContent = `0 / ${selectedImages.length}`;
+  $('#progressFill').style.width = '0%';
+  updateCarouselButtons();
+
+  // Process images sequentially
+  for (let i = 0; i < selectedImages.length; i++){
+    const file = selectedImages[i];
+    const img = new Image();
+    const imgUrl = URL.createObjectURL(file);
+    img.src = imgUrl;
+
+    try {
+      const data = await processImage(file, i, mode, visionModel, ttsModel);
+
+      // Store result
+      results.push({
+        image: img,
+        imageUrl: imgUrl,
+        data: data,
+        mode: mode,
+        imageIndex: i
+      });
+
+      // Update progress
+      const progress = ((i + 1) / selectedImages.length) * 100;
+      $('#progressFill').style.width = `${progress}%`;
+      $('#progressText').textContent = `${i + 1} / ${selectedImages.length}`;
+
+      // Show first result immediately
+      if (i === 0){
+        displayResult(0);
+      }
+
+      // Auto-advance to latest result if on last viewed result
+      if (currentResultIndex === i - 1){
+        currentResultIndex = i;
+        displayResult(i);
+      }
+
+      updateCarouselButtons();
+
+    } catch (err){
+      console.error(`Error processing image ${i}:`, err);
+      results.push({
+        image: img,
+        imageUrl: imgUrl,
+        data: { error: err.message || String(err) },
+        mode: mode,
+        imageIndex: i
+      });
     }
-  } catch (err){
-    renderResult('error', { error: err.message || String(err) });
-  } finally {
-    setLoading(false);
+  }
+
+  // Hide progress bar after completion
+  setTimeout(() => {
+    $('#progressBar').style.display = 'none';
+  }, 500);
+
+  setLoading(false);
+}
+
+function showModal(){
+  $('#demoModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+window.closeDemoModal = function(){
+  $('#demoModal').classList.remove('active');
+  document.body.style.overflow = '';
+
+  // Clean up object URLs
+  results.forEach(r => {
+    if (r.imageUrl) URL.revokeObjectURL(r.imageUrl);
+  });
+};
+
+function displayResult(index){
+  if (index < 0 || index >= results.length) return;
+
+  const result = results[index];
+  currentResultIndex = index;
+
+  // Update counter
+  $('#resultCounter').textContent = `(${index + 1} of ${results.length})`;
+
+  // Show image
+  const modalPreview = $('#modalPreview');
+  modalPreview.innerHTML = '';
+  if (result.image){
+    modalPreview.appendChild(result.image.cloneNode(true));
+  } else {
+    modalPreview.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No preview available</div>';
+  }
+
+  // Render results
+  const modalOutput = $('#modalOutput');
+  modalOutput.innerHTML = '';
+  renderResult(result.mode, result.data, modalOutput);
+
+  updateCarouselButtons();
+}
+
+function updateCarouselButtons(){
+  const prevBtn = $('#prevBtn');
+  const nextBtn = $('#nextBtn');
+
+  if (!prevBtn || !nextBtn) return;
+
+  prevBtn.disabled = currentResultIndex === 0;
+  nextBtn.disabled = currentResultIndex >= results.length - 1;
+
+  prevBtn.style.opacity = prevBtn.disabled ? '0.3' : '1';
+  nextBtn.style.opacity = nextBtn.disabled ? '0.3' : '1';
+}
+
+window.navigateResult = function(direction){
+  const newIndex = currentResultIndex + direction;
+  if (newIndex >= 0 && newIndex < results.length){
+    displayResult(newIndex);
+  }
+};
+
+function extractAudioText(mode, data){
+  if (mode === 'trip'){
+    let text = data.navigation_instruction || 'No instruction';
+    if (data.hazard_detected && data.hazard_guidance){
+      text += '. ' + data.hazard_guidance;
+    }
+    return text;
+  } else if (mode === 'deep'){
+    return data.recommendation || data.description || 'No recommendation';
+  } else {
+    return data.summary || data.description || 'No summary';
   }
 }
 
-function wire(){
-  $('#image').addEventListener('change', (e) => {
-    const f = e.target.files?.[0];
-    if (f) showPreview(f);
+window.playAudioInstruction = async function(){
+  if (results.length === 0 || currentResultIndex >= results.length){
+    alert('No audio instruction available');
+    return;
+  }
+
+  const result = results[currentResultIndex];
+  const audioText = extractAudioText(result.mode, result.data);
+
+  if (!audioText){
+    alert('No audio instruction available');
+    return;
+  }
+
+  const btn = document.querySelector('.demo-play-btn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span>⏳</span><span>Generating...</span>';
+  btn.disabled = true;
+
+  try {
+    const ttsModel = getSelectedModel('tts') || 'coqui_vits_ljspeech';
+    const apiBase = getApiBase();
+    const res = await fetch(`${apiBase}/api/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: audioText,
+        tts_model: ttsModel
+      })
+    });
+
+    if (!res.ok){
+      throw new Error('TTS generation failed');
+    }
+
+    // Get audio blob
+    const audioBlob = await res.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    // Play audio
+    const audio = new Audio(audioUrl);
+    audio.play();
+
+    // Update button
+    btn.innerHTML = '<span>🔊</span><span>Playing...</span>';
+
+    audio.onended = () => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      URL.revokeObjectURL(audioUrl);
+    };
+
+    audio.onerror = () => {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      alert('Failed to play audio');
+    };
+
+  } catch (err){
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+    alert('Failed to generate audio: ' + err.message);
+  }
+};
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (!$('#demoModal').classList.contains('active')) return;
+
+  if (e.key === 'ArrowLeft'){
+    navigateResult(-1);
+  } else if (e.key === 'ArrowRight'){
+    navigateResult(1);
+  } else if (e.key === 'Escape'){
+    closeDemoModal();
+  }
+});
+
+// Close modal on background click
+document.addEventListener('DOMContentLoaded', () => {
+  $('#demoModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'demoModal'){
+      closeDemoModal();
+    }
   });
-  $('#runBtn').addEventListener('click', (e) => { e.preventDefault(); run(); });
-  // Segmented control
+});
+
+function wire(){
+  // Images selection
+  $('#images').addEventListener('change', (e) => {
+    selectedImages = Array.from(e.target.files || []);
+    showPreviewGrid(selectedImages);
+  });
+
+  // JSON file selection
+  $('#navJson')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const json = JSON.parse(text);
+
+      navInstructions = {};
+
+      // Support two formats:
+      // Format 1: Simple array [{image_index: 0, instruction: "..."}, ...]
+      if (Array.isArray(json)){
+        json.forEach(item => {
+          if (item.image_index != null && item.instruction){
+            navInstructions[item.image_index] = item.instruction;
+          }
+        });
+      }
+      // Format 2: NavAid trip JSON with nested instructions array
+      else if (json.instructions && Array.isArray(json.instructions)){
+        json.instructions.forEach((item, index) => {
+          // Use step_number - 1 as image_index (0-based), or just use index
+          const imageIndex = (item.step_number != null) ? item.step_number - 1 : index;
+          const instruction = item.tts_text || item.instruction;
+          if (instruction){
+            navInstructions[imageIndex] = instruction;
+          }
+        });
+      }
+
+      $('#jsonPreview').style.display = 'block';
+      $('#jsonCount').textContent = Object.keys(navInstructions).length;
+
+      if (Object.keys(navInstructions).length === 0){
+        alert('No instructions found in JSON. Expected format:\n' +
+              '1. Array: [{image_index: 0, instruction: "..."}]\n' +
+              '2. Object: {instructions: [{step_number: 1, instruction: "..."}]}');
+      }
+    } catch (err){
+      alert('Failed to parse JSON file: ' + err.message);
+    }
+  });
+
+  // Run button
+  $('#runBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    run();
+  });
+
+  // Mode segmented control
   document.querySelectorAll('.segmented button').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.segmented button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const showNav = btn.dataset.mode === 'trip';
-      $('#navField').style.display = showNav ? 'block' : 'none';
+      const navPane = $('#navInstructionsPane');
+      const uploadPane = $('#uploadPane');
+
+      if (navPane && uploadPane) {
+        if (showNav) {
+          // Show nav pane and make upload pane share the row
+          navPane.style.display = 'block';
+          uploadPane.style.gridColumn = '';
+        } else {
+          // Hide nav pane and make upload pane full width
+          navPane.style.display = 'none';
+          uploadPane.style.gridColumn = '1 / -1';
+        }
+      }
     });
   });
-  // Sample chips
-  document.querySelectorAll('.sample-btn').forEach(btn => {
+
+  // Model selection buttons
+  document.querySelectorAll('.model-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('active'));
+      const modelType = btn.dataset.modelType;
+      // Remove active from all buttons of same type
+      document.querySelectorAll(`.model-btn[data-model-type="${modelType}"]`).forEach(b => {
+        b.classList.remove('active');
+      });
+      // Add active to clicked button
       btn.classList.add('active');
-      $('#image').value = '';
-      $('#preview').textContent = 'Sample selected';
     });
   });
 }
