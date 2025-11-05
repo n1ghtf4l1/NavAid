@@ -61,6 +61,9 @@ gemini_client = GeminiHazardClient(
     rpm_limit=0  # No rate limiting for demo
 )
 
+# Cached iOS profile (synced from app)
+cached_ios_profile = None
+
 def get_gemini_client(model_name="gemini-2.5-flash", temperature=0.2, top_p=0.8):
     """Create a Gemini client with specified model. Supports web demo model selection."""
     return GeminiHazardClient(
@@ -140,28 +143,53 @@ INTEGRATION_PROFILE_PATH = os.path.join(os.path.dirname(__file__), "user_profile
 
 def load_user_profile():
     """Load user profile if exists, otherwise return placeholder."""
+    global cached_ios_profile
+
+    # First check if we have a cached iOS profile from sync
+    if cached_ios_profile:
+        print(f"📱 Using cached iOS profile (synced from app)")
+        # Format the dict into a string for prompt injection
+        profile = cached_ios_profile
+        formatted = f"""## User Profile:
+- Name: {profile.get('name', 'Unknown')}
+- Age: {profile.get('age', 'Unknown')}
+- Vision Problems: {profile.get('visionProblems', 'Not specified')}
+- Assistive Devices: {profile.get('assistiveDevices', 'None')}
+- Other Vision Defects: {profile.get('otherVisionDefects', 'None')}
+- Primary Environments: {profile.get('primaryNavigationEnvironments', 'Not specified')}
+- Navigation Challenges: {profile.get('navigationChallenges', 'Not specified')}
+- Emergency Contact: {profile.get('emergencyContact', 'Not provided')}"""
+        return formatted
 
     # Search for iOS app profile in simulator OR container
     profile_path = None
+    found_profiles = []
 
     # Try container path first (real device)
     if os.path.exists(IOS_PROFILE_PATH):
         profile_path = IOS_PROFILE_PATH
-        print(f"📱 Using iOS container profile")
+        print(f"📱 Using iOS container profile: {IOS_PROFILE_PATH}")
     else:
-        # Search simulator devices
+        # Search simulator devices - find ALL profiles first
         simulator_base = os.path.expanduser("~/Library/Developer/CoreSimulator/Devices")
         if os.path.exists(simulator_base):
             for root, dirs, files in os.walk(simulator_base):
                 if 'user_profile.json' in files and '/Documents/' in root:
-                    profile_path = os.path.join(root, 'user_profile.json')
-                    print(f"📱 Found iOS simulator profile")
-                    break
+                    full_path = os.path.join(root, 'user_profile.json')
+                    # Check file modification time
+                    mtime = os.path.getmtime(full_path)
+                    found_profiles.append((full_path, mtime))
 
-    # Fallback to integration template
+        # Use most recently modified profile
+        if found_profiles:
+            found_profiles.sort(key=lambda x: x[1], reverse=True)
+            profile_path = found_profiles[0][0]
+            print(f"📱 Using iOS simulator profile (most recent): {profile_path}")
+
+    # Fallback to integration template ONLY if no iOS profile found
     if not profile_path:
         profile_path = INTEGRATION_PROFILE_PATH
-        print(f"📋 Using demo template")
+        print(f"📋 Using demo template (NO iOS profile found)")
 
     if profile_path and os.path.exists(profile_path):
         try:
@@ -567,8 +595,6 @@ def generate_trip():
     try:
         if gmaps_client is None:
             return jsonify({"error": "Google Maps API not available"}), 503
-        
-        demo_mode = 'WEBSITE'
 
         data = request.json
         origin = data.get('origin')
@@ -578,6 +604,7 @@ def generate_trip():
         avoid = data.get('avoid', [])  # List of things to avoid
         units = data.get('units', 'metric')
         use_cache = data.get('use_cache', True)
+        demo_mode = data.get('demo_mode', 'WEBSITE')  # 'IOS' or 'WEBSITE'
 
         if not origin or not destination:
             return jsonify({"error": "Both origin and destination are required"}), 400
@@ -749,7 +776,12 @@ def generate_trip():
         print(f"💾 Cached trip to {cache_file.name}")
 
         print(f"✅ Generated trip with {len(instructions)} steps")
-        return jsonify(trip_json)
+
+        # Return appropriate format based on demo_mode
+        if demo_mode == 'IOS':
+            return jsonify(trip_json)
+        else:
+            return jsonify(trip_json_full)
 
     except Exception as e:
         print(f"❌ Trip generation error: {e}")
@@ -831,44 +863,87 @@ def generate_color_scheme():
 
         model = genai.GenerativeModel("gemini-2.5-flash")
         gcfg = genai.types.GenerationConfig(
-            temperature=0.3,
+            temperature=0.7,  # Higher for color variety
             response_mime_type="application/json"
         )
 
-        prompt = f"""You are a color accessibility expert. Generate an optimal color scheme for a navigation app designed for blind and visually impaired users.
+        prompt = f"""You are a WCAG AAA color accessibility expert. Generate 5 COMPLETELY UNIQUE, VIBRANT colors for a navigation app.
 
-User's colorblind condition:
-{colorblind_desc}
+**User's Vision:** {colorblind_desc}
 
-Generate 5 button colors (in hex format) that are:
-1. Highly distinguishable from each other for this specific colorblind type
-2. High contrast against white/light backgrounds
-3. Safe and clear for the user's vision condition
+**CRITICAL RULES:**
+1. **ZERO DUPLICATES**: start_button, pause_button, end_button, scene_button MUST all be DIFFERENT colors
+2. **Minimum Distance**: Each color must be 60+ RGB units apart from others
+3. **High Contrast**: 7:1+ contrast against black backgrounds (WCAG AAA)
+4. **Vibrant**: Saturated, eye-catching colors (50-80% saturation in HSL)
+5. **Optimized**: For user's specific colorblind type
 
-Button purposes:
-- start_button: Start navigation (should feel "go/action")
-- pause_button: Pause trip (should feel "wait/caution")
-- end_button: End trip (should feel "stop/terminate")
-- scene_button: Scene understanding (should feel "explore/analyze")
-- deep_analyze_button: Deep traffic analysis (SAME as scene_button - used in two places)
+**Color Semantics (USE DIFFERENT SPECTRUM FOR EACH):**
+- start_button: Green/Cyan spectrum (#00C853, #00E676 range) - GO action
+- pause_button: Yellow/Orange spectrum (#FFC107, #FF9800 range) - CAUTION
+- end_button: Red/Pink spectrum (#F44336, #E91E63 range) - STOP
+- scene_button: Purple/Violet spectrum (#9C27B0, #7B1FA2 range) - ANALYZE
+- deep_analyze_button: EXACT SAME as scene_button
 
-Return ONLY a JSON object with these exact keys and hex color values (e.g., #1E88E5):
+**Validation:**
+Before returning, verify NO two colors (except scene=deep_analyze) are similar.
 
+Return JSON (no markdown):
 {{
   "start_button": "#HEXCODE",
   "pause_button": "#HEXCODE",
   "end_button": "#HEXCODE",
   "scene_button": "#HEXCODE",
   "deep_analyze_button": "#HEXCODE"
-}}
+}}"""
 
-NO markdown, NO explanation, JUST the JSON object."""
+        # Retry up to 3 times to get unique colors
+        for attempt in range(3):
+            response = model.generate_content(prompt, generation_config=gcfg)
+            raw_dict = json.loads(response.text)
 
-        response = model.generate_content(prompt, generation_config=gcfg)
-        raw_dict = json.loads(response.text)
+            # Validate color uniqueness
+            colors_to_check = {
+                'start_button': raw_dict['start_button'],
+                'pause_button': raw_dict['pause_button'],
+                'end_button': raw_dict['end_button'],
+                'scene_button': raw_dict['scene_button']
+            }
 
-        print(f"✅ Generated color scheme: {raw_dict}")
-        return jsonify(raw_dict)
+            def hex_to_rgb(hex_color):
+                hex_color = hex_color.lstrip('#')
+                return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
+            def rgb_distance(c1, c2):
+                r1, g1, b1 = hex_to_rgb(c1)
+                r2, g2, b2 = hex_to_rgb(c2)
+                return ((r2-r1)**2 + (g2-g1)**2 + (b2-b1)**2) ** 0.5
+
+            # Check all pairs for minimum distance
+            all_unique = True
+            color_list = list(colors_to_check.items())
+            for i in range(len(color_list)):
+                for j in range(i+1, len(color_list)):
+                    name1, color1 = color_list[i]
+                    name2, color2 = color_list[j]
+                    dist = rgb_distance(color1, color2)
+                    if dist < 60:
+                        print(f"⚠️ Colors too similar: {name1}={color1} and {name2}={color2} (distance: {dist:.1f})")
+                        all_unique = False
+                        break
+                if not all_unique:
+                    break
+
+            if all_unique:
+                print(f"✅ Generated unique color scheme (attempt {attempt + 1}): {raw_dict}")
+                return jsonify(raw_dict)
+            else:
+                print(f"⚠️ Attempt {attempt + 1} failed - retrying with higher temperature...")
+                gcfg.temperature = min(1.0, gcfg.temperature + 0.15)
+
+        # If all attempts fail, return validated fallback
+        print("⚠️ All attempts produced duplicates - using fallback")
+        return jsonify(raw_dict)  # Return last attempt
 
     except Exception as e:
         print(f"❌ Color scheme generation error: {e}")
@@ -882,6 +957,31 @@ NO markdown, NO explanation, JUST the JSON object."""
             "scene_button": "#10B981",
             "deep_analyze_button": "#10B981"
         })
+
+
+@app.route('/api/sync-profile', methods=['POST'])
+def sync_profile():
+    """Receive and cache user profile from iOS app."""
+    global cached_ios_profile
+
+    try:
+        profile_data = request.json
+        print(f"📱 Received iOS profile sync: {profile_data.get('name', 'Unknown')}")
+
+        # Cache the profile for immediate use
+        cached_ios_profile = profile_data
+
+        # Optionally save to a file as backup
+        sync_path = os.path.join(os.path.dirname(__file__), "ios_profile_synced.json")
+        with open(sync_path, 'w') as f:
+            json.dump(profile_data, f, indent=2)
+
+        print(f"✅ iOS profile cached and saved to {sync_path}")
+        return jsonify({"status": "success", "message": "Profile synced"}), 200
+
+    except Exception as e:
+        print(f"❌ Profile sync error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @app.route('/health', methods=['GET'])

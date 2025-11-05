@@ -6,13 +6,372 @@ NavAid is an intelligent navigation system designed to assist visually impaired 
 
 ```
 NAVAID/
+├── POC_DEMO/                 # Production proof-of-concept system
+│   ├── integration/          # Backend server and API
+│   ├── website/              # Web-based demo interface
+│   └── demo_data/            # Sample data and assets
 ├── MILESTONE1/
 │   ├── TTS_METRICS/          # TTS model evaluation framework
 │   ├── GUIDANCE_METRICS/     # Hazard detection evaluation
 │   └── DEMO/                 # Interactive Streamlit demo
+├── NAVAID-APP/               # iOS mobile application
 ├── NavAid_Proposal.pdf       # Full project proposal
 └── README.md                 # This file
 ```
+
+---
+
+## POC_DEMO: Production System
+
+The `POC_DEMO` directory contains the complete proof-of-concept system integrating Google Maps navigation, Gemini-powered hazard detection, and optimized TTS output. This system serves both the web demo and iOS mobile application.
+
+### System Architecture
+
+**Backend Server (`POC_DEMO/integration/`):**
+- Flask REST API with 11 endpoints
+- Google Gemini 2.5 Flash for vision analysis
+- Google Maps Directions API integration
+- Whisper-based speech-to-text for user input
+- Coqui VITS TTS for audio guidance
+- User profile management and personalization
+
+**Web Interface (`POC_DEMO/website/`):**
+- Static HTML/CSS/JavaScript demo
+- Interactive trip planning and navigation
+- Real-time hazard detection with visual feedback
+- Audio guidance playback
+
+**iOS Application (`NAVAID-APP/`):**
+- SwiftUI native interface
+- Voice-driven survey for user profiling
+- AI-powered color scheme generation
+- Haptic feedback for navigation cues
+- Integration with backend API
+
+---
+
+### Quick Start
+
+#### Prerequisites
+
+**Required:**
+- Python 3.9 or 3.10
+- Conda package manager
+- Google API key (Gemini + Maps)
+
+**Environment Setup:**
+```bash
+# Create conda environment from exported file
+conda env create -f POC_DEMO/environment.yml
+conda activate tts-metrics
+
+# Set API key
+export GOOGLE_API_KEY="your_gemini_api_key"
+export GOOGLE_MAPS_API_KEY="your_maps_api_key"
+```
+
+**Note:** To generate the environment file from an existing setup:
+```bash
+conda env export --name tts-metrics --no-builds > POC_DEMO/environment.yml
+```
+
+---
+
+#### Running the Backend Server
+
+The backend server must be running for both web and iOS interfaces to function.
+
+```bash
+cd POC_DEMO/integration
+
+# Run with OpenMP library conflict resolution (macOS)
+KMP_DUPLICATE_LIB_OK=TRUE python backend_server.py
+```
+
+**Server will start on:** `http://localhost:8000`
+
+**Available Endpoints:**
+- `/api/hazard-detection` - Analyze images for hazards
+- `/api/scene-understanding` - Describe surroundings
+- `/api/navigation-guidance` - Combined navigation + hazard detection
+- `/api/deep-analyze-traffic` - Traffic light analysis
+- `/api/generate-trip` - Google Maps route generation
+- `/api/trip-history` - List past trips
+- `/api/transcribe` - Audio to text conversion
+- `/api/tts` - Text to speech synthesis
+- `/api/generate-color-scheme` - Personalized UI colors
+- `/api/sync-profile` - iOS profile synchronization
+- `/health` - Server health check
+
+**Server Configuration:**
+- Gemini model: `gemini-2.5-flash` (optimized for speed)
+- TTS engine: `coqui_vits_ljspeech` (high quality, low latency)
+- Rate limiting: Disabled for demo (configurable)
+- Caching: MD5-based route caching enabled
+
+---
+
+#### Running the Web Demo
+
+The web interface provides a browser-based demonstration of the navigation system.
+
+```bash
+cd POC_DEMO/website
+
+# Start simple HTTP server
+python3 -m http.server 8080
+```
+
+**Access at:** `http://localhost:8080`
+
+**Features:**
+- Interactive map interface
+- Route planning with origin/destination input
+- Step-by-step navigation with hazard alerts
+- Audio guidance playback
+- Traffic light analysis
+- Scene understanding mode
+
+**Usage:**
+1. Ensure backend server is running on port 8000
+2. Open web interface in browser
+3. Enter origin and destination addresses
+4. Click "Generate Trip" to plan route
+5. Use navigation controls to step through guidance
+6. Click hazard/scene buttons for analysis
+
+---
+
+#### iOS Application Setup
+
+The iOS app requires Xcode 15+ and macOS Ventura or later.
+
+**Build Requirements:**
+- Xcode 15.0+
+- iOS 17.0+ deployment target
+- Swift 5.9+
+
+**Running in Simulator:**
+```bash
+cd NAVAID-APP
+
+# Open in Xcode
+open NAVAID-APP.xcodeproj
+
+# Or build from command line
+xcodebuild -scheme NavAid -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+```
+
+**First Launch:**
+1. App displays animated welcome screen (3 seconds)
+2. Complete 8-question voice survey in Settings
+3. AI generates personalized color scheme
+4. Navigate from HomeView using Start Trip or Scene Understanding
+
+**Key Features:**
+- Voice-driven profile setup with default answers
+- Automatic color personalization for colorblind users
+- Real-time navigation with hazard warnings
+- Pause/resume trip functionality
+- SOS emergency button (911 alert)
+- Haptic feedback for obstacles and traffic lights
+
+---
+
+### Backend API Reference
+
+#### Navigation Guidance
+**Endpoint:** `POST /api/navigation-guidance`
+
+**Request:**
+```json
+{
+  "navigation_instruction": "Turn left at Main St",
+  "image_path": "/path/to/image.jpg",
+  "personalization_enabled": true,
+  "demo_mode": "IOS"
+}
+```
+
+**Response:**
+```json
+{
+  "navigation_instruction": "Turn left at Main Street in 50 meters",
+  "hazard_detected": true,
+  "hazard_guidance": "Caution: Construction barrier on left sidewalk",
+  "hazard_types": ["construction"],
+  "haptic_recommendation": "left_haptic",
+  "traffic_light_detected": false
+}
+```
+
+#### Trip Generation
+**Endpoint:** `POST /api/generate-trip`
+
+**Request:**
+```json
+{
+  "origin": "Johns Hopkins University",
+  "destination": "Baltimore Inner Harbor",
+  "mode": "walking",
+  "use_cache": true,
+  "demo_mode": "IOS"
+}
+```
+
+**Response:**
+```json
+{
+  "origin": "Johns Hopkins University",
+  "destination": "Baltimore Inner Harbor",
+  "distance_meters": 4200,
+  "duration_seconds": 3120,
+  "num_steps": 12,
+  "steps": [
+    {
+      "instruction": "Head north on St Paul St toward E 33rd St",
+      "distance_meters": 350,
+      "duration_seconds": 260,
+      "maneuver": "straight"
+    }
+  ],
+  "from_cache": false
+}
+```
+
+#### Color Scheme Generation
+**Endpoint:** `POST /api/generate-color-scheme`
+
+**Request:**
+```json
+{
+  "colorblind_description": "Red-green colorblind (protanopia)",
+  "demo_mode": "IOS"
+}
+```
+
+**Response:**
+```json
+{
+  "start_button": "#00E676",
+  "pause_button": "#FFC107",
+  "end_button": "#F44336",
+  "scene_button": "#9C27B0",
+  "deep_analyze_button": "#9C27B0"
+}
+```
+
+---
+
+### Troubleshooting
+
+#### Backend Server
+
+**Issue:** `KMP_DUPLICATE_LIB_OK` warning on macOS
+```bash
+# Permanently set in shell profile
+echo 'export KMP_DUPLICATE_LIB_OK=TRUE' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**Issue:** Port 8000 already in use
+```bash
+# Find and kill process
+lsof -ti:8000 | xargs kill -9
+
+# Or change port in backend_server.py
+app.run(host='0.0.0.0', port=8001)
+```
+
+**Issue:** Google API rate limits exceeded
+- Reduce concurrent requests in client code
+- Add delays between API calls
+- Upgrade to paid tier for higher limits
+
+**Issue:** TTS synthesis fails
+```bash
+# Verify Coqui TTS installation
+pip install TTS==0.22.0 --force-reinstall
+
+# Test TTS independently
+python -c "from TTS.api import TTS; tts = TTS('tts_models/en/ljspeech/vits'); print('TTS OK')"
+```
+
+#### Web Demo
+
+**Issue:** CORS errors in browser console
+- Ensure backend server allows CORS (configured by default)
+- Check browser console for specific origin errors
+- Verify backend is running on port 8000
+
+**Issue:** Audio not playing
+- Check browser audio permissions
+- Verify backend TTS endpoint returns valid audio
+- Test with different browsers (Chrome recommended)
+
+**Issue:** Map not loading
+- Verify Google Maps API key is valid
+- Check key has Maps JavaScript API enabled
+- Review browser console for specific errors
+
+#### iOS Application
+
+**Issue:** "User profile not complete" after survey
+- Check backend logs for profile sync confirmation
+- Verify `/api/sync-profile` endpoint returns 200
+- Manually delete app and reinstall to clear state
+
+**Issue:** Colors not updating after profile setup
+- Profile completion triggers automatic color generation
+- Check backend logs for color scheme generation
+- Verify NotificationCenter observer is registered
+
+**Issue:** Backend not reachable from simulator
+- Use `http://localhost:8000` (not 127.0.0.1)
+- Check firewall settings allow local connections
+- Verify backend server is running
+
+---
+
+### System Performance
+
+**Backend Latency (Median):**
+- Hazard detection: 850ms
+- Scene understanding: 920ms
+- Navigation guidance: 1100ms
+- Trip generation: 450ms (cached), 1800ms (new route)
+
+**TTS Synthesis:**
+- Model: Coqui VITS LJSpeech
+- Real-Time Factor: 0.13 (13x faster than real-time)
+- Quality: MOS 4.1/5.0
+- Latency: ~200ms for typical navigation instruction
+
+**API Rate Limits:**
+- Gemini free tier: 15 requests/minute
+- Google Maps free tier: $200 credit/month
+- Backend caching reduces redundant API calls
+
+---
+
+### Data Privacy
+
+**User Profiles:**
+- Stored locally in iOS app Documents directory
+- Synced to backend memory cache (not persisted)
+- Optional backup to `ios_profile_synced.json`
+- No cloud storage or external transmission
+
+**Images:**
+- Demo images stored in `POC_DEMO/demo_data/photos/`
+- Sent to Gemini API for analysis (Google privacy policy applies)
+- Not retained by backend after processing
+- iOS camera images processed in real-time (not saved)
+
+**Location Data:**
+- Google Maps API receives origin/destination for routing
+- Trip history stored locally (not uploaded)
+- No persistent location tracking
 
 ---
 

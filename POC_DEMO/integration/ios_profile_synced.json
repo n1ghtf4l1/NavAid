@@ -1,0 +1,12 @@
+{
+  "primaryNavigationEnvironments": "I primarily navigate urban streets in downtown areas with heavy pedestrian traffic. I also frequently use public transportation including buses and subway systems. Occasionally I navigate indoor spaces like shopping malls and office buildings.",
+  "assistiveDevices": "I use a white cane for detecting obstacles at ground level. I also have a guide dog named Max who helps me navigate outdoor environments. I carry a talking GPS device as a backup.",
+  "navigationChallenges": "My biggest challenges are crossing busy intersections safely, especially when traffic lights don't have audio signals. I also struggle with detecting obstacles at chest or head height like tree branches and construction barriers. Uneven sidewalks and unexpected road work are particularly difficult.",
+  "version": "1.0",
+  "visionProblems": "I have complete blindness in both eyes. I lost my vision gradually over the past 5 years due to retinitis pigmentosa. I rely entirely on auditory cues and tactile feedback for navigation.",
+  "name": "John Doe",
+  "otherVisionDefects": "I have no color blindness since I have complete vision loss. Before losing my vision, I experienced significant light sensitivity and tunnel vision.",
+  "age": "32",
+  "emergencyContact": "Bulys, 91",
+  "completedAt": "2025-11-05T06:24:06Z"
+}
