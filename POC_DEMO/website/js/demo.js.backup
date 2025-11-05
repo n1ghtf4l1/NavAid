@@ -248,8 +248,7 @@ async function processImage(file, imageIndex, mode, visionModel, ttsModel){
   const payload = {
     image_path: imagePath,
     vision_model: visionModel,
-    tts_model: ttsModel,
-    personalization_enabled: getPersonalizationEnabled()
+    tts_model: ttsModel
   };
 
   // Add navigation instruction if trip mode
@@ -577,6 +576,17 @@ function wire(){
     run();
   });
 
+  // Unit selection buttons
+  document.querySelectorAll('.unit-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('Unit button clicked:', btn.dataset.unit);
+      document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
   // Load trip history
   async function loadTripHistory() {
     try {
@@ -653,6 +663,13 @@ function wire(){
       return;
     }
 
+    // Get selected route options (avoid)
+    const avoid = Array.from(document.querySelectorAll('.route-option-btn.active'))
+      .map(btn => btn.dataset.avoid);
+
+    // Get selected unit
+    const units = document.querySelector('.unit-btn.active')?.dataset.unit || 'metric';
+
     const btn = $('#generateTripBtn');
     const statusDiv = $('#tripGenStatus');
     const stepCount = $('#tripStepCount');
@@ -667,7 +684,7 @@ function wire(){
       const response = await fetch(`${getApiBase()}/api/generate-trip`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ origin, destination, mode })
+        body: JSON.stringify({ origin, destination, mode, avoid, units })
       });
 
       if (!response.ok) {
@@ -694,12 +711,13 @@ function wire(){
       stepCount.textContent = Object.keys(navInstructions).length;
 
       // Show success message
+      const avoidInfo = avoid.length > 0 ? `\nAvoiding: ${avoid.join(', ')}` : '';
       alert(`Trip generated successfully!\n\n` +
             `From: ${tripJson.trip_metadata.origin}\n` +
             `To: ${tripJson.trip_metadata.destination}\n` +
             `Steps: ${tripJson.trip_metadata.num_steps}\n` +
             `Distance: ${Math.round(tripJson.trip_metadata.total_distance_meters)}m\n` +
-            `Duration: ~${tripJson.trip_metadata.estimated_duration_minutes} min\n\n` +
+            `Duration: ~${tripJson.trip_metadata.estimated_duration_minutes} min${avoidInfo}\n\n` +
             `Please upload ${tripJson.trip_metadata.num_steps} photos (one per navigation step).`);
 
       console.log('Generated trip:', tripJson);
@@ -751,24 +769,6 @@ function wire(){
       btn.classList.add('active');
     });
   });
-
-  // Personalization toggle buttons
-  document.querySelectorAll('.personalization-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Remove active from all personalization buttons
-      document.querySelectorAll('.personalization-btn').forEach(b => {
-        b.classList.remove('active');
-      });
-      // Add active to clicked button
-      btn.classList.add('active');
-    });
-  });
-}
-
-// Get current personalization setting
-function getPersonalizationEnabled() {
-  const activeBtn = document.querySelector('.personalization-btn.active');
-  return activeBtn ? activeBtn.dataset.personalization === 'on' : false;
 }
 
 document.addEventListener('DOMContentLoaded', wire);

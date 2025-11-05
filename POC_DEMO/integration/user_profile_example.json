@@ -1,0 +1,29 @@
+{
+  "user_profile": {
+    "vision_condition": {
+      "type": "Retinitis Pigmentosa",
+      "description": "Progressive peripheral vision loss (tunnel vision), retaining central vision",
+      "field_of_view_degrees": 20,
+      "notes": "Difficulty detecting lateral hazards and obstacles from the side. Light sensitivity in bright outdoor environments."
+    },
+    "mobility_aids": {
+      "white_cane": true,
+      "walking_stick": false,
+      "guide_dog": false,
+      "other": ""
+    },
+    "preferences": {
+      "verbosity": "concise",
+      "distance_units": "meters",
+      "clock_position_callouts": true,
+      "urgency_levels": true,
+      "tactical_suggestions": true
+    },
+    "navigation_experience": {
+      "familiarity_with_audio_nav": "intermediate - used similar apps before",
+      "preferred_walking_speed": "moderate, cautious at intersections",
+      "common_environments": ["urban sidewalks", "campus paths", "shopping areas", "transit stops"]
+    },
+    "additional_notes": "Prefers clear directional cues (left/right) over clock positions when hazards are very close. Needs extra time at complex intersections with multiple hazards."
+  }
+}

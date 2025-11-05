@@ -46,9 +46,9 @@
         </div>
 
         <div class="card reveal">
-          <div class="kicker">🚦 Deep Analyze Traffic</div>
+          <div class="kicker">🚦 Deep Analyze</div>
           <h3>Crossing Safety</h3>
-          <p>Analyzes traffic signals with countdown timers, crossing recommendations, and pedestrian signal states. Uses detailed traffic-specific prompts.</p>
+          <p>Analyzes traffic signals with countdown timers, crossing recommendations, and pedestrian signal states.</p>
           <div style="margin-top: 12px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 8px; font-size: 13px; color: var(--muted);">
             <strong>Use case:</strong> "Is it safe to cross?", "How long until the light changes?", "What's the signal state?"
           </div>
@@ -78,7 +78,7 @@
           <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600;">Analysis Mode</h4>
           <div class="segmented" id="modeSeg" style="width: 100%;">
             <button type="button" data-mode="scene" class="active" style="flex: 1;">🧭 Scene</button>
-            <button type="button" data-mode="deep" style="flex: 1;">🚦 Traffic</button>
+            <button type="button" data-mode="deep" style="flex: 1;">🚦 Deep Analyze</button>
             <button type="button" data-mode="trip" style="flex: 1;">🗺️ Navigation</button>
           </div>
         </div>
@@ -128,6 +128,30 @@
             </button>
           </div>
         </div>
+
+        <!-- Personalization -->
+        <div>
+          <h4 style="margin: 0 0 12px 0; font-size: 15px; font-weight: 600;">Personalization</h4>
+          <div class="personalization-toggle" style="display: flex; gap: 12px;">
+            <button class="personalization-btn active" data-personalization="off">
+              <span class="personalization-icon">❌</span>
+              <div>
+                <span class="personalization-name">Off</span>
+                <span class="personalization-desc">Generic guidance for all users</span>
+              </div>
+            </button>
+            <button class="personalization-btn" data-personalization="on">
+              <span class="personalization-icon">✨</span>
+              <div>
+                <span class="personalization-name">On</span>
+                <span class="personalization-desc">Tailored to your profile & mobility aids</span>
+              </div>
+            </button>
+          </div>
+          <p style="font-size: 13px; color: var(--muted); margin-top: 10px; line-height: 1.5;">
+            When enabled, instructions are personalized based on your vision condition and mobility aids (e.g., walking stick tactical suggestions).
+          </p>
+        </div>
       </div>
 
       <!-- Navigation Instructions and Upload Images Side-by-Side -->
@@ -135,21 +159,64 @@
         <!-- Navigation Instructions (for trip mode) -->
         <div class="pane reveal" id="navInstructionsPane" style="display: none;">
           <h3 style="margin-top: 0;">Navigation Instructions</h3>
-          <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Provide turn-by-turn instructions as text or upload a JSON file.</p>
+          <p style="color: var(--muted); font-size: 14px; margin-bottom: 16px;">Generate trip from Google Maps or manually provide instructions.</p>
 
+          <!-- Google Maps Trip Generation -->
+          <div style="margin-bottom: 24px; padding: 20px; background: linear-gradient(180deg, rgba(108, 92, 231, 0.03), rgba(108, 92, 231, 0.05)); border-radius: 12px; border: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+              <img src="./assets/images/GoogleMapsLogo.png" alt="Google Maps" style="height: 24px; width: auto;" />
+              <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">Generate Navigation Route</h4>
+            </div>
+
+            <!-- Recent Trips -->
+            <div class="field" id="recentTripsField" style="display: none;">
+              <label for="recentTrips">🕒 Recent Trips</label>
+              <div style="position: relative;">
+                <select id="recentTrips" class="pretty-select">
+                  <option value="">Select a recent trip...</option>
+                </select>
+                <div class="select-arrow">▼</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="tripOrigin">Start Location</label>
+              <input id="tripOrigin" type="text" placeholder="e.g., Starbucks, Charles Village, Baltimore MD" list="originSuggestions" />
+              <datalist id="originSuggestions"></datalist>
+            </div>
+
+            <div class="field">
+              <label for="tripDestination">End Location</label>
+              <input id="tripDestination" type="text" placeholder="e.g., Bloomberg Student Center, Johns Hopkins University" list="destSuggestions" />
+              <datalist id="destSuggestions"></datalist>
+            </div>
+
+            <button id="generateTripBtn" class="btn btn-primary" style="width: 100%; margin-top: 16px; padding: 14px; font-size: 16px; font-weight: 600;">
+              Generate Trip
+            </button>
+
+            <div id="tripGenStatus" style="margin-top: 16px; padding: 14px; background: rgba(34, 197, 94, 0.1); border-radius: 8px; font-size: 14px; color: #15803d; border: 1px solid rgba(34, 197, 94, 0.2); display: none;">
+              <strong>✓ Trip generated:</strong> <span id="tripStepCount">0</span> walking steps
+            </div>
+          </div>
+
+          <div style="text-align: center; margin: 16px 0; color: var(--muted); font-size: 13px; font-weight: 600;">OR</div>
+
+          <!-- Manual Instruction -->
           <div class="field">
-            <label for="navInstruction">Manual Instruction</label>
+            <label for="navInstruction">Manual Instruction (Single)</label>
             <input id="navInstruction" type="text" placeholder="e.g., Continue straight for 20 meters" />
           </div>
 
           <div style="text-align: center; margin: 12px 0; color: var(--muted); font-size: 13px; font-weight: 600;">OR</div>
 
+          <!-- Upload JSON -->
           <div class="field">
             <label>Upload JSON</label>
             <label class="dropzone" style="cursor: pointer;">
               <input id="navJson" type="file" accept="application/json,.json" />
               <span class="dz-btn">📁 Choose JSON</span>
-              <div style="margin-top:6px; font-size:12px;">Array of {image_index, instruction}</div>
+              <div style="margin-top:6px; font-size:12px;">NavAid trip JSON format</div>
             </label>
             <div id="jsonPreview" style="margin-top: 12px; padding: 12px; background: rgba(108, 92, 231, 0.05); border-radius: 8px; font-size: 13px; color: var(--muted); display: none;">
               <strong>JSON loaded:</strong> <span id="jsonCount">0</span> instructions

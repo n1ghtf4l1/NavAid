@@ -77,8 +77,8 @@ If uncertain → **flag it**. Conservative detection preferred (false positive >
 | `hazard_detected` | bool | — | True if any hazard intersects walking path |
 | `num_hazards` | int | ≥0 | Count of distinct hazard TYPES (not instances) |
 | `hazard_types` | list[str] | Allowed tokens only | Deduplicated list from vocabulary below |
-| `one_sentence` | str | 10–25 words | Friendly description for TTS output |
-| `evasive_suggestion` | str | 12–30 words | Actionable instruction (imperative voice) |
+| `one_sentence` | str | 10–25 words | **CRITICAL: Clean, natural audio instruction that will be read aloud. Use clear spatial language ("on your left", "directly ahead", "to your right"). Make it sound natural, not robotic.** |
+| `evasive_suggestion` | str | 12–30 words | **CRITICAL: Actionable instruction in imperative voice. THIS IS THE PRIMARY AUDIO INSTRUCTION. Must be clear, calm, and specific. If traffic light detected, END WITH: "Traffic light ahead - use Deep Analyze when you reach the crossing."** |
 | `bearing` | str | {left, center, right, unknown} | Direction of primary/closest hazard |
 | `proximity` | str | {near, mid, far, unknown} | Distance category |
 | `confidence` | float | [0.0, 1.0] | Your certainty in the assessment |
@@ -289,14 +289,14 @@ When traffic light detected, the app will play:
 }
 ```
 
-### Example 4: Traffic Light Detected
+### Example 4: Traffic Light Detected (CRITICAL - Must remind about Deep Analyze)
 ```json
 {
   "hazard_detected": true,
   "num_hazards": 1,
   "hazard_types": ["trafficcone"],
-  "one_sentence": "traffic cone on left, pedestrian crossing visible ahead.",
-  "evasive_suggestion": "cone on left—stay right and approach the crosswalk carefully.",
+  "one_sentence": "traffic cone on your left, pedestrian crossing visible ahead.",
+  "evasive_suggestion": "Stay right to avoid the cone. Traffic light ahead - use Deep Analyze when you reach the crossing.",
   "bearing": "left",
   "proximity": "mid",
   "confidence": 0.80,
@@ -335,12 +335,12 @@ When traffic light detected, the app will play:
   "hazard_detected": true,
   "num_hazards": 3,
   "hazard_types": ["trafficcone", "person", "vehicle"],
-  "one_sentence": "cone on right, pedestrian crossing center, and parked vehicle narrowing left side.",
-  "evasive_suggestion": "multiple hazards—stop briefly, let person pass, then navigate between cone and vehicle.",
+  "one_sentence": "traffic cone on your right, pedestrian crossing center path, parked vehicle on your left.",
+  "evasive_suggestion": "Stop and wait for the pedestrian to pass, then proceed carefully between the cone and vehicle. Traffic light ahead - use Deep Analyze when you reach the crossing.",
   "bearing": "center",
   "proximity": "near",
   "confidence": 0.76,
-  "notes": "congested area; wait recommended; crosswalk visible ahead",
+  "notes": "congested area; wait recommended; crosswalk 10 meters ahead",
   "haptic_recommendation": "full_haptic",
   "traffic_light_detected": true,
   "traffic_light_info": {
@@ -348,6 +348,24 @@ When traffic light detected, the app will play:
     "description": "Pedestrian crossing just beyond current hazards with visible traffic light.",
     "requires_deep_analyze": true
   }
+}
+```
+
+### Example 7: Personalized (User with Walking Stick)
+```json
+{
+  "hazard_detected": true,
+  "num_hazards": 1,
+  "hazard_types": ["trafficcone"],
+  "one_sentence": "traffic cone directly ahead blocking center of walkway.",
+  "evasive_suggestion": "Cone ahead at 2 meters. Extend your walking stick to the right to locate the cone edge, then pass on the right side.",
+  "bearing": "center",
+  "proximity": "near",
+  "confidence": 0.87,
+  "notes": "personalized for user with walking stick",
+  "haptic_recommendation": "full_haptic",
+  "traffic_light_detected": false,
+  "traffic_light_info": null
 }
 ```
 
@@ -365,7 +383,7 @@ When traffic light detected, the app will play:
 
 ---
 
-## User Profile (Optional Context)
+## User Profile (Personalization Context)
 
 The following information about the user may be available to help you tailor hazard detection. Use this information when relevant, but do not force it into every response.
 
@@ -374,9 +392,11 @@ The following information about the user may be available to help you tailor haz
 **How to use this information:**
 - If user mentions specific vision defects (e.g., peripheral vision loss, light sensitivity), prioritize hazards that might be in their blind spots or harder to detect
 - If user mentions difficulty detecting specific obstacles (e.g., knee-height objects, uneven surfaces), pay extra attention to those hazard types
-- If user uses assistive devices (e.g., white cane, guide dog), consider how detected hazards might interact with those tools in your evasive suggestions
+- **If user uses a WHITE CANE or WALKING STICK:** Include tactical suggestions in evasive_suggestion like "extend your cane to the left to locate the cone edge" or "sweep your cane right to confirm clearance" or "tap ahead to verify the curb position"
+- **If user has a GUIDE DOG:** Consider how commands like "forward", "left", "right" interact with the dog's training. Mention safe waiting positions if multiple hazards present.
 - If user mentions specific navigation challenges (e.g., difficulty with stairs, curbs), flag those features prominently
-- Keep your one-sentence description and evasive suggestions concise - only mention profile-relevant details when they genuinely improve safety
+- **Keep audio instructions natural and calm** - only mention profile-relevant details when they genuinely improve safety
+- **Prioritize clear spatial directions** over technical descriptions
 
 ---
 

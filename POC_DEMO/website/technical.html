@@ -38,7 +38,7 @@
           <div class="kicker">🧠 Vision AI</div>
           <h3>Google Gemini</h3>
           <p><strong>2.5 Flash:</strong> Fast scene understanding<br>
-          <strong>2.0 Flash:</strong> Deep traffic analysis</p>
+          <strong>2.0 Flash:</strong> Deep scene analysis</p>
           <div class="tech-detail">
             Dynamically selected based on context and latency requirements. Flash 2.5 for quick hazard detection, Flash 2.0 for complex intersection analysis.
           </div>
@@ -73,6 +73,113 @@
       </div>
     </section>
 
+    <!-- Vision Model Comparison -->
+    <section style="margin-bottom: 80px;">
+      <h2 style="text-align: center; margin-bottom: 16px;">Why Gemini?</h2>
+      <p class="section-sub">Open-source vision models don't meet our strict requirements for safety-critical navigation.</p>
+
+      <div class="model-comparison-card reveal">
+        <div class="model-comparison-table">
+          <div class="model-row model-header-row">
+            <div class="model-cell">Model</div>
+            <div class="model-cell">MMMU Score</div>
+            <div class="model-cell">Speed Estimate</div>
+            <div class="model-cell">Size</div>
+          </div>
+
+          <div class="model-row winner-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge winner-badge">
+                <div class="badge-icon">⚡</div>
+              </div>
+              <span><strong>Gemini 2.5 Flash</strong></span>
+            </div>
+            <div class="model-cell score-cell winner-score">79.7%</div>
+            <div class="model-cell speed-cell winner-speed">~7s</div>
+            <div class="model-cell size-cell">Proprietary</div>
+          </div>
+
+          <div class="model-row lite-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge lite-badge">
+                <div class="badge-icon">🏃</div>
+              </div>
+              <span><strong>Gemini 2.5 Flash Lite</strong></span>
+            </div>
+            <div class="model-cell score-cell">72.9%</div>
+            <div class="model-cell speed-cell">~3-4s</div>
+            <div class="model-cell size-cell">Proprietary</div>
+          </div>
+
+          <div class="model-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge gemini2-badge">
+                <div class="badge-icon">🔷</div>
+              </div>
+              <span><strong>Gemini 2.0 Flash</strong></span>
+            </div>
+            <div class="model-cell score-cell">71.7%</div>
+            <div class="model-cell speed-cell">~5-6s</div>
+            <div class="model-cell size-cell">Proprietary</div>
+          </div>
+
+          <div class="model-row comparison-divider"></div>
+
+          <div class="model-row opensource-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge opensource-badge">
+                <div class="badge-icon">📦</div>
+              </div>
+              <span>SmoIVLM-2.2B</span>
+            </div>
+            <div class="model-cell score-cell poor-score">42.0%</div>
+            <div class="model-cell speed-cell">~2-4s on M2</div>
+            <div class="model-cell size-cell">2.2B</div>
+          </div>
+
+          <div class="model-row opensource-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge opensource-badge">
+                <div class="badge-icon">📦</div>
+              </div>
+              <span>SmoIVLM-500M</span>
+            </div>
+            <div class="model-cell score-cell poor-score">33.7%</div>
+            <div class="model-cell speed-cell">~1.5-3s on M2</div>
+            <div class="model-cell size-cell">500M</div>
+          </div>
+
+          <div class="model-row opensource-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge opensource-badge">
+                <div class="badge-icon">📦</div>
+              </div>
+              <span>LLaVA-OneVision-0.5B</span>
+            </div>
+            <div class="model-cell score-cell poor-score">31.4%</div>
+            <div class="model-cell speed-cell">~1.5-3s on M2</div>
+            <div class="model-cell size-cell">500M</div>
+          </div>
+
+          <div class="model-row opensource-row">
+            <div class="model-cell model-name-cell">
+              <div class="model-badge opensource-badge">
+                <div class="badge-icon">📦</div>
+              </div>
+              <span>SmoIVLM-256M</span>
+            </div>
+            <div class="model-cell score-cell poor-score">29.0%</div>
+            <div class="model-cell speed-cell">~1-2s on M2</div>
+            <div class="model-cell size-cell">256M</div>
+          </div>
+        </div>
+
+        <div class="comparison-note">
+          <strong>Why not open-source?</strong> While smaller models are faster, their accuracy (<30-42% MMMU) is insufficient for safety-critical navigation where misidentifying hazards could endanger users. Gemini's 79.7% accuracy with ~7s latency provides the necessary reliability.
+        </div>
+      </div>
+    </section>
+
     <!-- Key Capabilities -->
     <section style="margin-bottom: 80px;">
       <h2 style="text-align: center; margin-bottom: 40px;">Key Capabilities</h2>
@@ -97,7 +204,7 @@
           <div class="capability-item reveal">
             <div class="cap-icon">🚦</div>
             <div>
-              <h3>Traffic Analysis</h3>
+              <h3>Deep Analyze</h3>
               <p>Signal state interpretation with "Deep Analyze" mode for complex intersections and countdown timers.</p>
             </div>
           </div>

@@ -61,12 +61,177 @@
     <section class="section">
       <h2 style="text-align:center;">Impact & Scope</h2>
       <p class="section-sub">Retinitis Pigmentosa and related peripheral vision loss affect millions globally — a significant and underserved population.</p>
-      <div class="grid-2" style="margin-top:32px; gap:32px; align-items:start;">
-        <div class="card reveal" style="padding:0; overflow:hidden;">
-          <img src="./assets/images/Populations.png" alt="Affected populations worldwide" style="width:100%; height:auto; display:block;" />
+
+      <div class="grid-2" style="margin-top:48px; gap:40px; align-items:start;">
+        <!-- Vision Categories Table -->
+        <div class="vision-table-card reveal">
+          <div class="vision-table-header">
+            <h3>Visual Acuity Categories</h3>
+            <p>Impact on better eye vision</p>
+          </div>
+
+          <div class="vision-table">
+            <div class="vision-row header-row">
+              <div class="vision-cell">Category</div>
+              <div class="vision-cell">Worse than</div>
+              <div class="vision-cell">Equal to or better than</div>
+            </div>
+
+            <div class="vision-row" data-category="mild">
+              <div class="vision-cell category-cell">
+                <div class="eye-icon mild-icon">
+                  <div class="pupil"></div>
+                </div>
+                <span>Mild vision impairment</span>
+              </div>
+              <div class="vision-cell">6/12</div>
+              <div class="vision-cell">6/18</div>
+            </div>
+
+            <div class="vision-row" data-category="moderate">
+              <div class="vision-cell category-cell">
+                <div class="eye-icon moderate-icon">
+                  <div class="pupil"></div>
+                </div>
+                <span>Moderate vision impairment</span>
+              </div>
+              <div class="vision-cell">6/18</div>
+              <div class="vision-cell">6/60</div>
+            </div>
+
+            <div class="vision-row" data-category="severe">
+              <div class="vision-cell category-cell">
+                <div class="eye-icon severe-icon">
+                  <div class="pupil"></div>
+                </div>
+                <span>Severe vision impairment</span>
+              </div>
+              <div class="vision-cell">6/60</div>
+              <div class="vision-cell">3/60</div>
+            </div>
+
+            <div class="vision-row" data-category="blind">
+              <div class="vision-cell category-cell">
+                <div class="eye-icon blind-icon">
+                  <div class="pupil"></div>
+                </div>
+                <span>Blindness</span>
+              </div>
+              <div class="vision-cell">3/60</div>
+              <div class="vision-cell">—</div>
+            </div>
+
+            <div class="vision-row" data-category="near">
+              <div class="vision-cell category-cell">
+                <div class="eye-icon near-icon">
+                  <div class="pupil"></div>
+                </div>
+                <span>Near vision impairment</span>
+              </div>
+              <div class="vision-cell" colspan="2">N6 or M 0.8 at 40cm</div>
+            </div>
+          </div>
         </div>
-        <div class="card reveal" style="padding:0; overflow:hidden;">
-          <img src="./assets/images/PeopleStats.png" alt="Vision impairment statistics" style="width:100%; height:auto; display:block;" />
+
+        <!-- Global Impact Table -->
+        <div class="impact-table-card reveal">
+          <div class="impact-table-header">
+            <h3>Global Vision Impairment</h3>
+            <p>Millions affected worldwide by region</p>
+          </div>
+
+          <div class="impact-table">
+            <div class="impact-row header-row">
+              <div class="impact-cell">Region</div>
+              <div class="impact-cell">Total</div>
+              <div class="impact-cell">Preventable</div>
+              <div class="impact-cell">Not Preventable</div>
+            </div>
+
+            <div class="impact-row" data-region="high-income">
+              <div class="impact-cell region-cell">
+                <div class="region-icon high-income-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>High Income</span>
+              </div>
+              <div class="impact-cell total-cell">30M</div>
+              <div class="impact-cell preventable-cell">25M</div>
+              <div class="impact-cell unavoidable-cell">5M</div>
+            </div>
+
+            <div class="impact-row" data-region="central-europe">
+              <div class="impact-cell region-cell">
+                <div class="region-icon central-europe-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>Central Europe, Eastern Europe & Central Asia</span>
+              </div>
+              <div class="impact-cell total-cell">15M</div>
+              <div class="impact-cell preventable-cell">12M</div>
+              <div class="impact-cell unavoidable-cell">3M</div>
+            </div>
+
+            <div class="impact-row" data-region="latin-america">
+              <div class="impact-cell region-cell">
+                <div class="region-icon latin-america-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>Latin America & Caribbean</span>
+              </div>
+              <div class="impact-cell total-cell">20M</div>
+              <div class="impact-cell preventable-cell">16M</div>
+              <div class="impact-cell unavoidable-cell">4M</div>
+            </div>
+
+            <div class="impact-row" data-region="north-africa">
+              <div class="impact-cell region-cell">
+                <div class="region-icon north-africa-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>North Africa & Middle East</span>
+              </div>
+              <div class="impact-cell total-cell">25M</div>
+              <div class="impact-cell preventable-cell">20M</div>
+              <div class="impact-cell unavoidable-cell">5M</div>
+            </div>
+
+            <div class="impact-row" data-region="south-east-asia">
+              <div class="impact-cell region-cell">
+                <div class="region-icon south-east-asia-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>South East Asia, East Asia & Oceania</span>
+              </div>
+              <div class="impact-cell total-cell">80M</div>
+              <div class="impact-cell preventable-cell">65M</div>
+              <div class="impact-cell unavoidable-cell">15M</div>
+            </div>
+
+            <div class="impact-row" data-region="south-asia">
+              <div class="impact-cell region-cell">
+                <div class="region-icon south-asia-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>South Asia</span>
+              </div>
+              <div class="impact-cell total-cell">70M</div>
+              <div class="impact-cell preventable-cell">60M</div>
+              <div class="impact-cell unavoidable-cell">10M</div>
+            </div>
+
+            <div class="impact-row" data-region="sub-saharan">
+              <div class="impact-cell region-cell">
+                <div class="region-icon sub-saharan-icon">
+                  <div class="region-dot"></div>
+                </div>
+                <span>Sub-Saharan Africa</span>
+              </div>
+              <div class="impact-cell total-cell">35M</div>
+              <div class="impact-cell preventable-cell">30M</div>
+              <div class="impact-cell unavoidable-cell">5M</div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
